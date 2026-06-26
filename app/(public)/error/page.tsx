@@ -1,6 +1,3 @@
-import { Button } from "@/components/ui/button"
-import { Activity, AlertCircle } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 
 export default async function ErrorPage({
@@ -9,36 +6,28 @@ export default async function ErrorPage({
   searchParams: Promise<{ message?: string }>
 }) {
   const resolvedParams = await searchParams
-  const errorMessage = resolvedParams.message || "We encountered an unexpected error while processing your request."
+  const errorMessage = resolvedParams.message || "The page you are looking for doesn't exist or another error occurred."
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-slate-50 p-6 md:p-10">
-      <div className="flex w-full max-w-md flex-col gap-6">
-        <Link href="/" className="flex items-center gap-2 self-center font-medium text-primary">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Activity className="size-6" />
-          </div>
-          <span className="text-2xl font-bold text-slate-900">Relay</span>
+    <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4 text-center">
+      <h1 className="text-9xl font-extrabold tracking-tight text-foreground sm:text-[10rem]">
+        Error
+      </h1>
+      <h2 className="mt-8 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+        Something went wrong
+      </h2>
+      <p className="mt-4 text-sm text-muted-foreground sm:text-base">
+        {errorMessage}
+        <br />
+        <Link href="/" className="font-medium text-primary hover:underline">
+          Go back
         </Link>
-        <Card className="border-destructive/50">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
-              <AlertCircle className="size-6" />
-            </div>
-            <CardTitle className="text-xl">Something went wrong!</CardTitle>
-            <CardDescription>
-              {errorMessage}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center gap-4">
-            <Link href="/" className="w-full">
-              <Button className="w-full">
-                Go back home
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
+        , or head over to{" "}
+        <Link href="/" className="font-medium text-primary hover:underline">
+          home
+        </Link>{" "}
+        to choose a new direction.
+      </p>
     </div>
   )
 }
