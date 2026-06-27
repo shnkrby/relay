@@ -1,6 +1,8 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import {
   Card,
   CardContent,
@@ -15,6 +17,16 @@ import { joinOrg } from '../_actions/join-org'
 
 export function JoinOrgCard() {
   const [state, action, isPending] = useActionState(joinOrg, null)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (state?.success && state.data?.slug) {
+      toast.success('Successfully joined organization!')
+      router.push(`/${state.data.slug}`)
+    } else if (state?.error) {
+      toast.error(state.error)
+    }
+  }, [state, router])
 
   return (
     <Card className="flex flex-col">
@@ -35,9 +47,6 @@ export function JoinOrgCard() {
               required
             />
           </div>
-          {state?.error && (
-            <p className="text-sm font-medium text-destructive">{state.error}</p>
-          )}
           <Button type="submit" className="w-full mt-auto" disabled={isPending}>
             {isPending ? 'Joining...' : 'Join Organization'}
           </Button>

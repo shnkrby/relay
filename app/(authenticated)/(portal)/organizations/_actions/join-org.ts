@@ -2,14 +2,17 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { joinOrgSchema } from '@/lib/validations/org'
 
 export async function joinOrg(prevState: any, formData: FormData) {
   const supabase = await createClient()
 
   const joinCode = formData.get('joinCode') as string
-  if (!joinCode || joinCode.trim() === '') {
-    return { success: false, error: 'Join code is required.' }
+  
+  // Zod validation
+  const result = joinOrgSchema.safeParse({ joinCode })
+  if (!result.success) {
+    return { success: false, error: result.error.issues[0].message }
   }
 
   // Get current user
@@ -18,35 +21,23 @@ export async function joinOrg(prevState: any, formData: FormData) {
     return { success: false, error: 'Not authenticated.' }
   }
 
-  // Find organization by join code
-  const { data: org, error: orgError } = await supabase
-    .from('organizations')
-    .select('id, slug')
-    .eq('join_code', joinCode)
-    .single()
+  // Call the secure RPC function to verify code and join
+  const { data: orgSlug, error: rpcError } = await supabase
+    .rpc('join_org_by_code', { p_join_code: joinCode })
 
-  if (orgError || !org) {
-    return { success: false, error: 'Invalid join code. Please try again.' }
+  if (rpcError) {
+    console.error('Join org RPC error:', rpcError)
+    // If the error message from Postgres is our custom 'Invalid join code', return it
+    if (rpcError.message.includes('Invalid join code')) {
+      return { success: false, error: 'Invalid join code. Please try again.' }
+    }
+    return { success: false, error: `Database error: ${rpcError.message}` }
   }
 
-  // Insert user into org_members
-  const { error: memberError } = await supabase
-    .from('org_members')
-    .insert({
-      org_id: org.id,
-      profile_id: user.id,
-      role: 'member',
-    })
-
-  if (memberError) {
-    // If the user is already a member, it might throw a unique constraint error
-    if (memberError.code === '23505') {
-      redirect(`/${org.slug}`)
-    }
-    console.error('Join org error:', memberError)
-    return { success: false, error: 'Failed to join organization. Please try again.' }
+  if (!orgSlug) {
+    return { success: false, error: 'Failed to join organization.' }
   }
 
   revalidatePath('/organizations')
-  redirect(`/${org.slug}`)
+  return { success: true, data: { slug: orgSlug } }
 }
