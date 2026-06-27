@@ -13,7 +13,7 @@ export default async function OrganizationsGatewayPage() {
   }
 
   // Fetch organizations the user belongs to
-  const { data: userOrgs } = await supabase
+  const { data: userOrgs, error } = await supabase
     .from('org_members')
     .select(`
       role,
