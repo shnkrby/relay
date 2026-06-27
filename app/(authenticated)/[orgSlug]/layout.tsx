@@ -71,7 +71,7 @@ export default async function WorkspaceLayout({
     >
       <AppSidebar variant="inset" currentOrg={org} userOrgs={userOrgs} role={formattedRole} userName={userName} />
       <SidebarInset>
-        <SiteHeader orgName={org.name} role={formattedRole} />
+        <SiteHeader currentOrg={org} role={formattedRole} />
         <div className="flex flex-1 flex-col">
           <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
             {children}

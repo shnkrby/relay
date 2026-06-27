@@ -14,14 +14,11 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar"
-import { OrgSwitcher } from "@/app/(authenticated)/[orgSlug]/_components/org-switcher"
 import Link from "next/link"
+import { Organization } from "@/types/database"
+import { OrgSwitcher } from "@/components/relay/org-switcher"
 
-interface Org {
-  id: string
-  name: string
-  slug: string
-}
+type PickedOrg = Pick<Organization, 'id' | 'name' | 'slug'>
 
 export function AppSidebar({
   currentOrg,
@@ -30,8 +27,8 @@ export function AppSidebar({
   userName,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
-  currentOrg: Org
-  userOrgs: Org[]
+  currentOrg: PickedOrg
+  userOrgs: PickedOrg[]
   role: string
   userName: string
 }) {
@@ -42,7 +39,7 @@ export function AppSidebar({
       icon: <LayoutDashboardIcon />,
     },
     {
-      title: "My Batons",
+      title: "Tasks",
       url: `/${currentOrg.slug}/tasks`,
       icon: <CheckSquareIcon />,
     },
