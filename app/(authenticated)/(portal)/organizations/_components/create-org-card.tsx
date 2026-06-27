@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -14,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { createOrg } from '../_actions/create-org'
+import { PlusIcon, ArrowRightIcon } from 'lucide-react'
 
 export function CreateOrgCard() {
   const [state, action, isPending] = useActionState(createOrg, null)
@@ -29,26 +29,30 @@ export function CreateOrgCard() {
   }, [state, router])
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col shadow-sm border-gray-200">
       <CardHeader>
-        <CardTitle className="text-xl">Create a New Organization</CardTitle>
-        <CardDescription>
-          Start a new workspace for your team and manage events.
-        </CardDescription>
+        <CardTitle className="text-xl flex items-center gap-3">
+          <div className="flex size-8 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+            <PlusIcon className="size-4" />
+          </div>
+          Start New Organization
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-between">
-        <form action={action} className="grid gap-4">
+        <form action={action} className="grid gap-6">
           <div className="grid gap-2">
-            <Label htmlFor="orgName">Organization Name</Label>
+            <Label htmlFor="orgName" className="font-medium text-slate-700">Organization Name</Label>
             <Input
               id="orgName"
               name="orgName"
-              placeholder="Acme Corp"
+              placeholder="Horizon Student Council"
               required
+              className="bg-gray-50/50"
             />
           </div>
-          <Button type="submit" variant="secondary" className="w-full mt-auto" disabled={isPending}>
-            {isPending ? 'Creating...' : 'Create Organization'}
+          <Button type="submit" className="w-full mt-auto bg-purple-600 hover:bg-purple-700 text-white" disabled={isPending}>
+            {isPending ? 'Creating...' : 'Create Workspace'}
+            <ArrowRightIcon className="ml-2 size-4" />
           </Button>
         </form>
       </CardContent>

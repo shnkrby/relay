@@ -30,14 +30,17 @@ export default async function OrganizationsGatewayPage() {
 
   return (
     <div className="flex w-full max-w-5xl flex-col items-center gap-10 mt-10">
-      <div className="text-center">
+      <div className="flex flex-col items-center text-center">
+        <div className="mb-6 flex size-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {hasOrgs ? 'Welcome back to Relay' : 'Where are you heading today?'}
+          {hasOrgs ? 'Welcome back to Relay' : 'You\'re in. Now pick your path.'}
         </h1>
-        <p className="mt-2 text-lg text-slate-600 dark:text-slate-400">
+        <p className="mt-2 text-lg text-slate-600 dark:text-slate-400 max-w-lg">
           {hasOrgs 
             ? 'Select an organization to enter your workspace.' 
-            : 'Get started by joining an existing organization or creating a new one.'}
+            : 'Join an existing organization with a code, or create a fresh workspace from scratch.'}
         </p>
       </div>
 
