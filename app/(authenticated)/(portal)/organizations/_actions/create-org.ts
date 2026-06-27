@@ -9,9 +9,11 @@ export async function createOrg(prevState: any, formData: FormData) {
   const supabase = await createClient()
 
   const orgName = formData.get('orgName') as string
+  const memberLimitStr = formData.get('memberLimit') as string | null
+  const memberLimit = memberLimitStr ? parseInt(memberLimitStr, 10) : null
   
   // Zod validation
-  const result = createOrgSchema.safeParse({ orgName })
+  const result = createOrgSchema.safeParse({ orgName, memberLimit })
   if (!result.success) {
     return { success: false, error: result.error.issues[0].message }
   }
@@ -36,6 +38,7 @@ export async function createOrg(prevState: any, formData: FormData) {
       name: orgName,
       slug,
       join_code: joinCode,
+      member_limit: memberLimit,
     })
 
   if (orgError) {
