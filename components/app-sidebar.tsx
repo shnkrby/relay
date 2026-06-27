@@ -1,18 +1,21 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboardIcon, CheckSquareIcon, CalendarIcon, UsersIcon, Settings2Icon, CircleHelpIcon } from "lucide-react"
+import { LayoutDashboardIcon, CheckSquareIcon, CalendarIcon, UsersIcon, Settings2Icon, CircleHelpIcon, Building2Icon, ZapIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
-import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
 } from "@/components/ui/sidebar"
 import { OrgSwitcher } from "@/app/(authenticated)/[orgSlug]/_components/org-switcher"
+import Link from "next/link"
 
 interface Org {
   id: string
@@ -23,10 +26,14 @@ interface Org {
 export function AppSidebar({
   currentOrg,
   userOrgs,
+  role,
+  userName,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   currentOrg: Org
   userOrgs: Org[]
+  role: string
+  userName: string
 }) {
   const navMain = [
     {
@@ -35,7 +42,7 @@ export function AppSidebar({
       icon: <LayoutDashboardIcon />,
     },
     {
-      title: "Tasks",
+      title: "My Batons",
       url: `/${currentOrg.slug}/tasks`,
       icon: <CheckSquareIcon />,
     },
@@ -48,6 +55,11 @@ export function AppSidebar({
       title: "Committees",
       url: `/${currentOrg.slug}/committees`,
       icon: <UsersIcon />,
+    },
+    {
+      title: "Organizations",
+      url: `/organizations`,
+      icon: <Building2Icon />,
     },
   ]
 
@@ -64,23 +76,28 @@ export function AppSidebar({
     },
   ]
 
-  const user = {
-    name: "User",
-    email: "user@relay.com",
-    avatar: "",
-  }
-
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="py-4">
-        <OrgSwitcher currentOrg={currentOrg} userOrgs={userOrgs} />
+      <SidebarHeader className="py-4 px-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" render={<Link href="/organizations" />}>
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white">
+                <ZapIcon className="size-5 fill-current" />
+              </div>
+              <div className="flex flex-col gap-0.5 leading-none">
+                <span className="font-semibold text-lg tracking-tight">Relay</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
         <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        <OrgSwitcher currentOrg={currentOrg} userOrgs={userOrgs} role={role} userName={userName} />
       </SidebarFooter>
     </Sidebar>
   )

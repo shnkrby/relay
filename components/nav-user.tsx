@@ -1,5 +1,7 @@
 "use client"
 
+import { logout } from "@/app/(public)/(auth)/_actions/auth"
+
 import {
   Avatar,
   AvatarFallback,
@@ -94,11 +96,14 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOutIcon
-              />
-              Log out
-            </DropdownMenuItem>
+            <form action={logout} className="w-full">
+              <button type="submit" className="w-full text-left">
+                <DropdownMenuItem className="cursor-pointer">
+                  <LogOutIcon />
+                  Log out
+                </DropdownMenuItem>
+              </button>
+            </form>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

@@ -33,11 +33,14 @@ export default async function WorkspaceLayout({
     redirect('/organizations')
   }
 
-  // Fetch all user organizations for the switcher
+  // Fetch all user organizations for the switcher and the role for the current org
   let userOrgs: any[] = []
+  let role = 'member'
+  
   const { data: memberships } = await supabase
     .from('org_members')
     .select(`
+      role,
       organizations (
         id,
         name,
@@ -48,7 +51,14 @@ export default async function WorkspaceLayout({
 
   if (memberships) {
     userOrgs = memberships.map((m: any) => m.organizations).filter(Boolean)
+    const currentMembership = memberships.find((m: any) => m.organizations?.id === org.id)
+    if (currentMembership) {
+      role = currentMembership.role
+    }
   }
+
+  const formattedRole = role.charAt(0).toUpperCase() + role.slice(1)
+  const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || "User"
 
   return (
     <SidebarProvider
@@ -59,9 +69,9 @@ export default async function WorkspaceLayout({
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" currentOrg={org} userOrgs={userOrgs} />
+      <AppSidebar variant="inset" currentOrg={org} userOrgs={userOrgs} role={formattedRole} userName={userName} />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader orgName={org.name} role={formattedRole} />
         <div className="flex flex-1 flex-col">
           <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
             {children}

@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronsUpDown, Check, PlusCircle } from 'lucide-react'
+import { ChevronsUpDown, Check, PlusCircle, LogOutIcon } from 'lucide-react'
+import { logout } from "@/app/(public)/(auth)/_actions/auth"
 
 import {
   DropdownMenu,
@@ -12,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 
 interface Org {
   id: string
@@ -23,45 +24,82 @@ interface Org {
 interface OrgSwitcherProps {
   currentOrg: Org
   userOrgs: Org[]
+  role?: string
+  userName?: string
 }
 
-export function OrgSwitcher({ currentOrg, userOrgs }: OrgSwitcherProps) {
+export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = "User" }: OrgSwitcherProps) {
   const router = useRouter()
+  const { isMobile } = useSidebar()
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        className="inline-flex h-10 w-[220px] items-center justify-between rounded-md border border-input bg-background px-4 py-2 text-sm font-semibold ring-offset-background transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-      >
-        <span className="truncate">{currentOrg.name}</span>
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-[220px]" align="start">
-        <DropdownMenuLabel className="text-xs uppercase text-muted-foreground">
-          Organizations
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        {userOrgs.map((org) => (
-          <DropdownMenuItem
-            key={org.id}
-            onSelect={() => router.push(`/${org.slug}`)}
-            className="flex items-center justify-between cursor-pointer"
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+              />
+            }
           >
-            <span className="truncate">{org.name}</span>
-            {org.id === currentOrg.id && (
-              <Check className="ml-2 h-4 w-4 opacity-50" />
-            )}
-          </DropdownMenuItem>
-        ))}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onSelect={() => router.push('/organizations')}
-          className="text-muted-foreground cursor-pointer"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Create or Join...
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+            <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold">
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">{userName}</span>
+              <span className="truncate text-xs text-muted-foreground">{currentOrg.name} · {role}</span>
+            </div>
+            <ChevronsUpDown className="ml-auto size-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent 
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg" 
+            side={isMobile ? "bottom" : "right"} 
+            align="end" 
+            sideOffset={4}
+          >
+            <DropdownMenuLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              My Organizations
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {userOrgs.map((org) => (
+              <DropdownMenuItem
+                key={org.id}
+                onSelect={() => router.push(`/${org.slug}`)}
+                className="flex items-center gap-3 cursor-pointer p-2"
+              >
+                <div className="flex size-8 items-center justify-center rounded-md border bg-background font-medium">
+                  {org.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="grid flex-1">
+                  <span className="truncate font-medium">{org.name}</span>
+                </div>
+                {org.id === currentOrg.id && (
+                  <Check className="ml-auto h-4 w-4 opacity-50" />
+                )}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onSelect={() => router.push('/organizations')}
+              className="cursor-pointer p-2 text-blue-600 focus:text-blue-700"
+            >
+              <PlusCircle className="mr-2 size-4" />
+              <span className="font-medium">Create or join org</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <form action={logout} className="w-full">
+              <button type="submit" className="w-full text-left">
+                <DropdownMenuItem className="cursor-pointer p-2 text-red-600 focus:text-red-700">
+                  <LogOutIcon className="mr-2 size-4" />
+                  <span className="font-medium">Log out</span>
+                </DropdownMenuItem>
+              </button>
+            </form>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
   )
 }
