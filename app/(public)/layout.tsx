@@ -11,6 +11,7 @@ const roboto = Roboto({
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -29,6 +30,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <NextTopLoader color="#2563eb" showSpinner={false} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

@@ -12,6 +12,7 @@ const roboto = Roboto({
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
   title: "Relay - Dashboard",
@@ -30,6 +31,7 @@ export default function AuthenticatedRootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
+        <NextTopLoader color="#2563eb" showSpinner={false} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
