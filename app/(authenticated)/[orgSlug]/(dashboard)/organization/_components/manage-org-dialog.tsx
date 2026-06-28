@@ -64,12 +64,14 @@ export function ManageOrgDialog({ org }: ManageOrgDialogProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-          <Settings2Icon className="mr-2 size-4" />
-          Manage Organization
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Settings2Icon className="mr-2 size-4" />
+            Manage Organization
+          </Button>
+        }
+      />
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
