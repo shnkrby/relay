@@ -3,22 +3,34 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { ActionResponse } from '@/types/actions'
+import { z } from 'zod'
 
-export type ActionResponse = {
-  success: boolean;
-  data?: any;
-  error?: string;
-}
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address.'),
+  password: z.string().min(1, 'Password is required.'),
+})
+
+const signupSchema = z.object({
+  full_name: z.string().min(1, 'Full name is required.'),
+  email: z.string().email('Please enter a valid email address.'),
+  password: z.string().min(8, 'Password must be at least 8 characters long.'),
+})
 
 export async function login(prevState: ActionResponse, formData: FormData): Promise<ActionResponse> {
   const supabase = await createClient()
 
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+  const rawData = {
+    email: formData.get('email'),
+    password: formData.get('password'),
   }
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const result = loginSchema.safeParse(rawData)
+  if (!result.success) {
+    return { success: false, error: result.error.issues[0].message }
+  }
+
+  const { error } = await supabase.auth.signInWithPassword(result.data)
 
   if (error) {
     return { success: false, error: error.message }
@@ -31,12 +43,28 @@ export async function login(prevState: ActionResponse, formData: FormData): Prom
 export async function signup(prevState: ActionResponse, formData: FormData): Promise<ActionResponse> {
   const supabase = await createClient()
 
-  const data = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
+  const rawData = {
+    full_name: formData.get('full_name'),
+    email: formData.get('email'),
+    password: formData.get('password'),
   }
 
-  const { error } = await supabase.auth.signUp(data)
+  const result = signupSchema.safeParse(rawData)
+  if (!result.success) {
+    return { success: false, error: result.error.issues[0].message }
+  }
+
+  const { full_name, email, password } = result.data
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name,
+      },
+    },
+  })
 
   if (error) {
     return { success: false, error: error.message }
@@ -49,5 +77,5 @@ export async function signup(prevState: ActionResponse, formData: FormData): Pro
 export async function logout() {
   const supabase = await createClient()
   await supabase.auth.signOut()
-  redirect('/')
+  redirect('/login')
 }

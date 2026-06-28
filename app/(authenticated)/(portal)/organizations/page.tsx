@@ -1,76 +1,57 @@
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { OrgActionSelector } from './_components/org-action-selector'
+import { OrgList } from './_components/org-list'
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 
-export default function OrganizationsGatewayPage() {
+export default async function OrganizationsGatewayPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  // Fetch organizations the user belongs to
+  const { data: userOrgs, error } = await supabase
+    .from('org_members')
+    .select(`
+      role,
+      organizations (
+        id,
+        name,
+        slug,
+        description,
+        logo_url
+      )
+    `)
+    .eq('profile_id', user.id)
+
+  const hasOrgs = userOrgs && userOrgs.length > 0
+
   return (
-    <div className="flex w-full max-w-4xl flex-col items-center gap-10 mt-10">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Welcome to Relay</h1>
-        <p className="mt-2 text-lg text-slate-600">
-          Get started by joining an existing organization or creating a new one.
-        </p>
-      </div>
+    <div className="relative min-h-[calc(100vh-4rem)] w-full flex flex-col items-center py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-500/10 dark:bg-blue-600/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-500/10 dark:bg-purple-600/10 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-      <div className="grid w-full gap-8 md:grid-cols-2">
-        {/* Join Organization Card */}
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle className="text-xl">Join an Organization</CardTitle>
-            <CardDescription>
-              Have a join code from your team? Enter it below.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col justify-between">
-            <form className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="joinCode">Join Code</Label>
-                <Input
-                  id="joinCode"
-                  name="joinCode"
-                  placeholder="e.g. RELAY-1234"
-                  required
-                />
-              </div>
-              <Button type="button" className="w-full mt-auto">
-                Join Organization
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+      <div className="flex w-full max-w-6xl flex-col items-center gap-12 z-10">
+        <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">
+            {hasOrgs ? 'Welcome to your Workspace' : 'Begin your Journey'}
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-slate-600 dark:text-slate-400">
+            {hasOrgs 
+              ? 'Select an organization to continue where you left off.' 
+              : 'Join an existing organization with a code, or create a fresh workspace from scratch.'}
+          </p>
+        </div>
 
-        {/* Create Organization Card */}
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle className="text-xl">Create a New Organization</CardTitle>
-            <CardDescription>
-              Start a new workspace for your team and manage events.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-1 flex-col justify-between">
-            <form className="grid gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="orgName">Organization Name</Label>
-                <Input
-                  id="orgName"
-                  name="orgName"
-                  placeholder="Acme Corp"
-                  required
-                />
-              </div>
-              <Button type="button" variant="secondary" className="w-full mt-auto">
-                Create Organization
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <div className="w-full mt-4">
+          <div className="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+            {hasOrgs && <OrgList organizations={userOrgs as any} />}
+            <OrgActionSelector />
+          </div>
+        </div>
       </div>
     </div>
   )
