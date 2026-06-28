@@ -58,15 +58,24 @@ export interface Event {
   created_at: string; // TIMESTAMPTZ
 }
 
-export interface Task {
+export interface EventDuty {
   id: string; // UUID
   event_id: string; // UUID
   committee_id: string; // UUID
+  name: string;
+  created_at: string; // TIMESTAMPTZ
+}
+
+export interface Task {
+  id: string; // UUID
+  duty_id: string; // UUID
   assignee_id: string | null; // UUID
   title: string;
   description: string | null;
   status: TaskStatus;
   priority: PriorityLevel;
   due_date: string | null; // TIMESTAMPTZ
+  overdue_reason: string | null; // TEXT
+  completion_report: string | null; // TEXT
   created_at: string; // TIMESTAMPTZ
 }
