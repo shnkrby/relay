@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { CheckSquareIcon, ArrowLeftIcon, CalendarIcon } from 'lucide-react'
+import { CheckSquareIcon, ArrowLeftIcon, CalendarIcon, UsersIcon } from 'lucide-react'
 import Link from 'next/link'
 import { TaskBoard } from './_components/task-board'
 import { CreateTaskDialog } from './_components/create-task-dialog'
@@ -112,7 +112,8 @@ export default async function DutyTaskBoardPage({
     }
   }) || []
 
-  const eventTitle = Array.isArray(duty.events) ? duty.events[0]?.title : duty.events?.title
+  const dutyData: any = duty;
+  const eventTitle = Array.isArray(dutyData.events) ? dutyData.events[0]?.title : dutyData.events?.title
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8 h-full">
@@ -125,12 +126,22 @@ export default async function DutyTaskBoardPage({
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
               <CheckSquareIcon className="size-8 text-blue-600" />
-              {duty.name} Tasks
+              {dutyData.name} Tasks
             </h1>
-            <p className="mt-2 text-slate-500 dark:text-slate-400 text-lg flex items-center gap-2">
-              <CalendarIcon className="size-5" />
-              Event: <span className="font-medium text-slate-700 dark:text-slate-300">{eventTitle}</span>
-            </p>
+            <div className="flex flex-wrap items-center gap-6 mt-4">
+              <div className="flex flex-col">
+                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1 text-sm">
+                  <UsersIcon className="size-4" /> Committee
+                </span>
+                <span className="font-semibold text-slate-900 dark:text-white">{dutyData.committees?.name || 'Committee'}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-slate-500 dark:text-slate-400 flex items-center gap-1 text-sm">
+                  <CalendarIcon className="size-4" /> Event
+                </span>
+                <span className="font-semibold text-slate-900 dark:text-white">{eventTitle || 'Unknown Event'}</span>
+              </div>
+            </div>
           </div>
           
           {canManageTasks && (

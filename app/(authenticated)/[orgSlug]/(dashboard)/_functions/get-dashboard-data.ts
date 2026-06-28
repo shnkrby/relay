@@ -21,16 +21,16 @@ export async function getDashboardData(orgId: string, userId: string) {
     // My Open Batons
     supabase
       .from('tasks')
-      .select('id, events!inner(org_id)', { count: 'exact', head: true })
-      .eq('events.org_id', orgId)
+      .select('id, event_duties!inner(events!inner(org_id))', { count: 'exact', head: true })
+      .eq('event_duties.events.org_id', orgId)
       .eq('assignee_id', userId)
       .in('status', ['pending', 'in_progress']),
 
     // Completed Batons
     supabase
       .from('tasks')
-      .select('id, events!inner(org_id)', { count: 'exact', head: true })
-      .eq('events.org_id', orgId)
+      .select('id, event_duties!inner(events!inner(org_id))', { count: 'exact', head: true })
+      .eq('event_duties.events.org_id', orgId)
       .eq('assignee_id', userId)
       .eq('status', 'completed'),
 
@@ -48,10 +48,10 @@ export async function getDashboardData(orgId: string, userId: string) {
         title, 
         status, 
         created_at, 
-        events!inner(org_id),
+        event_duties!inner(events!inner(org_id)),
         profiles(full_name)
       `)
-      .eq('events.org_id', orgId)
+      .eq('event_duties.events.org_id', orgId)
       .order('created_at', { ascending: false })
       .limit(5),
 
@@ -62,9 +62,11 @@ export async function getDashboardData(orgId: string, userId: string) {
         id,
         title,
         status,
-        tasks (
-          id,
-          status
+        event_duties (
+          tasks (
+            id,
+            status
+          )
         )
       `)
       .eq('org_id', orgId)
@@ -96,7 +98,8 @@ export async function getDashboardData(orgId: string, userId: string) {
   })
 
   const eventProgress = (eventsResult.data || []).map((event: any, index: number) => {
-    const tasks = event.tasks || []
+    // Flatten tasks from all event duties into a single array
+    const tasks = event.event_duties?.flatMap((duty: any) => duty.tasks || []) || []
     const total = tasks.length
     const current = tasks.filter((t: any) => t.status === 'completed').length
     const colorTheme = colors[index % colors.length]
