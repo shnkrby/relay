@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboardIcon, CheckSquareIcon, CalendarIcon, UsersIcon, Settings2Icon, Building2Icon, ZapIcon, ShieldCheckIcon } from "lucide-react"
+import { LayoutDashboardIcon, CheckSquareIcon, CalendarIcon, UsersIcon, Building2Icon, ZapIcon, ShieldCheckIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import {
@@ -12,24 +12,28 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
 import { Organization } from "@/types/database"
 import { OrgSwitcher } from "@/components/relay/org-switcher"
+import { EntityLogo } from "@/components/relay/entity-logo"
 
-type PickedOrg = Pick<Organization, 'id' | 'name' | 'slug'>
+type PickedOrg = Pick<Organization, 'id' | 'name' | 'slug' | 'logo_url'>
 
 export function AppSidebar({
   currentOrg,
   userOrgs,
   role,
   userName,
+  avatarUrl,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   currentOrg: PickedOrg
   userOrgs: PickedOrg[]
   role: string
   userName: string
+  avatarUrl?: string | null
 }) {
   const navMain = [
     {
@@ -67,7 +71,7 @@ export function AppSidebar({
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="py-4 px-4">
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/organizations" />}>
@@ -81,11 +85,13 @@ export function AppSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <SidebarSeparator />
       <SidebarContent>
         <NavMain items={navMain} />
       </SidebarContent>
+      <SidebarSeparator />
       <SidebarFooter>
-        <OrgSwitcher currentOrg={currentOrg} userOrgs={userOrgs} role={role} userName={userName} />
+        <OrgSwitcher currentOrg={currentOrg} userOrgs={userOrgs} role={role} userName={userName} avatarUrl={avatarUrl} />
       </SidebarFooter>
     </Sidebar>
   )

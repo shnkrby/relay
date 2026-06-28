@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
+import { getNotifications } from './_functions/get-notifications'
 
 export default async function WorkspaceLayout({
   children,
@@ -24,7 +25,7 @@ export default async function WorkspaceLayout({
   // Verify the user is a member of this organization
   const { data: org, error: orgError } = await supabase
     .from('organizations')
-    .select('id, name, slug, is_setup_complete')
+    .select('id, name, slug, is_setup_complete, logo_url')
     .eq('slug', orgSlug)
     .single()
 
@@ -49,7 +50,8 @@ export default async function WorkspaceLayout({
       organizations (
         id,
         name,
-        slug
+        slug,
+        logo_url
       )
     `)
     .eq('profile_id', user.id)
@@ -63,7 +65,18 @@ export default async function WorkspaceLayout({
   }
 
   const formattedRole = role.charAt(0).toUpperCase() + role.slice(1)
-  const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || "User"
+  // Fetch user profile
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, avatar_url')
+    .eq('id', user.id)
+    .single()
+
+  const userName = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || "User"
+  const avatarUrl = profile?.avatar_url || null
+
+  // Fetch notifications
+  const { notifications, unreadCount } = await getNotifications(org.id, user.id)
 
   return (
     <SidebarProvider
@@ -74,9 +87,9 @@ export default async function WorkspaceLayout({
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" currentOrg={org} userOrgs={userOrgs} role={formattedRole} userName={userName} />
+      <AppSidebar variant="inset" currentOrg={org} userOrgs={userOrgs} role={formattedRole} userName={userName} avatarUrl={avatarUrl} />
       <SidebarInset>
-        <SiteHeader currentOrg={org} role={formattedRole} />
+        <SiteHeader currentOrg={org} role={formattedRole} notifications={notifications} unreadCount={unreadCount} />
         <div className="flex flex-1 flex-col">
           <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
             {children}

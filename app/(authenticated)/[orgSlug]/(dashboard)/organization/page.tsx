@@ -63,11 +63,15 @@ export default async function OrganizationPage({
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
-            <Building2Icon className="size-8 text-blue-600" />
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-4">
+            {org.logo_url ? (
+              <img src={org.logo_url} alt={org.name} className="size-12 rounded-lg object-cover border shadow-sm" />
+            ) : (
+              <Building2Icon className="size-10 text-blue-600" />
+            )}
             {org.name}
           </h1>
-          <p className="mt-2 text-slate-500 dark:text-slate-400 max-w-2xl">
+          <p className="mt-3 text-slate-500 dark:text-slate-400 max-w-2xl text-lg">
             {org.description || "Manage your organization, team members, and workspace settings."}
           </p>
         </div>

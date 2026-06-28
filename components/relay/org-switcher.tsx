@@ -2,8 +2,10 @@
 
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import { ChevronsUpDown, Check, PlusCircle, LogOutIcon, Loader2Icon } from 'lucide-react'
+import { ChevronsUpDown, Check, PlusCircle, LogOutIcon, Loader2Icon, UserIcon, Building2Icon } from 'lucide-react'
 import { logout } from "@/app/(public)/(auth)/_actions/auth"
+import { leaveOrganization } from "@/app/(authenticated)/[orgSlug]/(dashboard)/organization/_actions/leave-organization"
+import { toast } from 'sonner'
 
 import {
   DropdownMenu,
@@ -17,19 +19,35 @@ import {
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar"
 import { Organization } from '@/types/database'
 
-type PickedOrg = Pick<Organization, 'id' | 'name' | 'slug'>
+type PickedOrg = Pick<Organization, 'id' | 'name' | 'slug' | 'logo_url'>
 
 interface OrgSwitcherProps {
   currentOrg: PickedOrg
   userOrgs: PickedOrg[]
   role?: string
   userName?: string
+  avatarUrl?: string | null
 }
 
-export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = "User" }: OrgSwitcherProps) {
+export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = "User", avatarUrl }: OrgSwitcherProps) {
   const router = useRouter()
-  const { isMobile } = useSidebar()
+  const { isMobile, state } = useSidebar()
   const [switchingTo, setSwitchingTo] = React.useState<string | null>(null)
+  const [isLeaving, startLeaving] = React.useTransition()
+
+  async function handleLeaveOrg() {
+    if (!confirm('Are you sure you want to leave this organization?')) return
+    
+    startLeaving(async () => {
+      const result = await leaveOrganization(currentOrg.slug, currentOrg.id)
+      if (!result.success) {
+        toast.error(result.error)
+        return
+      }
+      toast.success('You have left the organization.')
+      router.push('/organizations')
+    })
+  }
 
   React.useEffect(() => {
     setSwitchingTo(null)
@@ -54,14 +72,18 @@ export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = 
               </div>
             ) : (
               <>
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white font-bold">
-                  {userName.charAt(0).toUpperCase()}
+                <div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white font-bold overflow-hidden">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={userName} className="w-full h-full object-cover" />
+                  ) : (
+                    userName.charAt(0).toUpperCase()
+                  )}
                 </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                   <span className="truncate font-semibold">{userName}</span>
                   <span className="truncate text-xs text-muted-foreground">{currentOrg.name} · {role}</span>
                 </div>
-                <ChevronsUpDown className="ml-auto size-4" />
+                <ChevronsUpDown className="ml-auto size-4 group-data-[collapsible=icon]:hidden" />
               </>
             )}
           </DropdownMenuTrigger>
@@ -88,8 +110,12 @@ export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = 
             }}
             className="flex items-center gap-3 cursor-pointer p-2"
           >
-            <div className="flex size-8 items-center justify-center rounded-md border bg-background font-medium">
-              {org.name.charAt(0).toUpperCase()}
+            <div className="flex size-8 items-center justify-center rounded-md border bg-background font-medium overflow-hidden">
+              {org.logo_url ? (
+                <img src={org.logo_url} alt={org.name} className="w-full h-full object-cover" />
+              ) : (
+                org.name.charAt(0).toUpperCase()
+              )}
             </div>
             <div className="grid flex-1">
               <span className="truncate font-medium">{org.name}</span>
@@ -106,6 +132,27 @@ export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = 
         >
           <PlusCircle className="mr-2 size-4" />
           <span className="font-medium">Create or join org</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => router.push(`/${currentOrg.slug}/profile`)}
+          className="cursor-pointer p-2"
+        >
+          <UserIcon className="mr-2 size-4" />
+          <span className="font-medium">My Profile</span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={handleLeaveOrg}
+          disabled={isLeaving}
+          className="cursor-pointer p-2 text-orange-600 focus:text-orange-700"
+        >
+          {isLeaving ? (
+            <Loader2Icon className="mr-2 size-4 animate-spin" />
+          ) : (
+            <LogOutIcon className="mr-2 size-4" />
+          )}
+          <span className="font-medium">Leave Organization</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <form action={logout} className="w-full">
