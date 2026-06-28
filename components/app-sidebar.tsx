@@ -1,10 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboardIcon, CheckSquareIcon, CalendarIcon, UsersIcon, Settings2Icon, CircleHelpIcon, Building2Icon, ZapIcon, ShieldCheckIcon } from "lucide-react"
+import { LayoutDashboardIcon, CheckSquareIcon, CalendarIcon, UsersIcon, Settings2Icon, Building2Icon, ZapIcon, ShieldCheckIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavSecondary } from "@/components/nav-secondary"
 import {
   Sidebar,
   SidebarContent,
@@ -59,22 +58,9 @@ export function AppSidebar({
       icon: <UsersIcon />,
     },
     {
-      title: "Organizations",
-      url: `/organizations`,
+      title: "Organization",
+      url: `/${currentOrg.slug}/organization`,
       icon: <Building2Icon />,
-    },
-  ]
-
-  const navSecondary = [
-    {
-      title: "Settings",
-      url: `/${currentOrg.slug}/settings`,
-      icon: <Settings2Icon />,
-    },
-    {
-      title: "Get Help",
-      url: "#",
-      icon: <CircleHelpIcon />,
     },
   ]
 
@@ -96,7 +82,6 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={navMain} />
-        <NavSecondary items={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <OrgSwitcher currentOrg={currentOrg} userOrgs={userOrgs} role={role} userName={userName} />

@@ -17,6 +17,7 @@ export interface Organization {
   id: string; // UUID
   name: string;
   slug: string;
+  description: string | null; // TEXT
   join_code: string;
   logo_url: string | null;
   created_at: string; // TIMESTAMPTZ
