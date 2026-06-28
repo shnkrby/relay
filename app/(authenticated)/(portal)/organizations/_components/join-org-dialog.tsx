@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { joinOrg } from '../_actions/join-org'
 import { HashIcon, ArrowRightIcon } from 'lucide-react'
 
-export function JoinOrgDialog({ children }: { children: React.ReactNode }) {
+export function JoinOrgDialog({ children }: { children: React.ReactElement }) {
   const [state, action, isPending] = useActionState(joinOrg, null)
   const [open, setOpen] = useState(false)
   const router = useRouter()
@@ -33,9 +33,7 @@ export function JoinOrgDialog({ children }: { children: React.ReactNode }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-3">

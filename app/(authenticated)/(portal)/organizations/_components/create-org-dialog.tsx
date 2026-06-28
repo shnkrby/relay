@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button'
 import { createOrg } from '../_actions/create-org'
 import { PlusIcon, ArrowRightIcon } from 'lucide-react'
 
-export function CreateOrgDialog({ children }: { children: React.ReactNode }) {
+export function CreateOrgDialog({ children }: { children: React.ReactElement }) {
   const [state, action, isPending] = useActionState(createOrg, null)
   const [isNoLimit, setIsNoLimit] = useState(true)
   const [open, setOpen] = useState(false)
@@ -34,9 +34,7 @@ export function CreateOrgDialog({ children }: { children: React.ReactNode }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger render={children} />
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl flex items-center gap-3">
