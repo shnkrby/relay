@@ -42,9 +42,10 @@ export default async function CommitteesPage({
 
   // Fetch committees
   const committees = await getCommittees(org.id, user.id, role)
+  const isLeaderOfAny = committees.some((c: any) => c.lead_id === user.id)
 
   let orgMembers: { id: string; name: string }[] = []
-  if (isAdmin) {
+  if (isAdmin || isLeaderOfAny) {
     const { data: members } = await supabase
       .from('org_members')
       .select('profile_id, profiles(id, full_name, email)')
@@ -90,6 +91,7 @@ export default async function CommitteesPage({
           orgSlug={orgSlug} 
           role={role} 
           orgMembers={orgMembers} 
+          userId={user.id}
         />
       </div>
     </div>

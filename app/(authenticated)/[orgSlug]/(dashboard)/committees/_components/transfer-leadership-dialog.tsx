@@ -1,10 +1,10 @@
 'use client'
 
 import * as React from 'react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { UserPlusIcon, Loader2Icon } from 'lucide-react'
+import { CrownIcon, Loader2Icon } from 'lucide-react'
 
 import {
   Dialog,
@@ -24,54 +24,39 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
-import { assignMember } from '../_actions/assign-member'
-import { getCommitteeMembers } from '../_actions/get-committee-members'
+import { transferLeadership } from '../_actions/transfer-leadership'
 
 interface Member {
   id: string
   name: string
 }
 
-interface AssignMemberDialogProps {
+interface TransferLeadershipDialogProps {
   orgId: string
   orgSlug: string
   committeeId: string
   members: Member[]
+  currentLeadId: string
 }
 
-export function AssignMemberDialog({ orgId, orgSlug, committeeId, members }: AssignMemberDialogProps) {
+export function TransferLeadershipDialog({ orgId, orgSlug, committeeId, members, currentLeadId }: TransferLeadershipDialogProps) {
   const [open, setOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const [selectedProfileId, setSelectedProfileId] = useState<string>('')
-  const [assignedMemberIds, setAssignedMemberIds] = useState<Set<string>>(new Set())
   const router = useRouter()
-
-  useEffect(() => {
-    if (open) {
-      getCommitteeMembers(committeeId).then(res => {
-        if (res.success && res.data) {
-          setAssignedMemberIds(new Set(res.data.map((m: any) => m.id)))
-        }
-      })
-    } else {
-      setAssignedMemberIds(new Set())
-      setSelectedProfileId('')
-    }
-  }, [open, committeeId])
 
   async function onSubmit(formData: FormData) {
     if (!selectedProfileId) {
-      toast.error('Please select a member first.')
+      toast.error('Please select a member to transfer leadership to.')
       return
     }
 
     setIsPending(true)
     
-    // Manually append committeeId and profileId since Select might not serialize
     formData.set('committeeId', committeeId)
-    formData.set('profileId', selectedProfileId)
+    formData.set('newLeadId', selectedProfileId)
     
-    const result = await assignMember(orgSlug, orgId, null, formData)
+    const result = await transferLeadership(orgSlug, orgId, null, formData)
     setIsPending(false)
     
     if (!result.success) {
@@ -79,62 +64,65 @@ export function AssignMemberDialog({ orgId, orgSlug, committeeId, members }: Ass
       return
     }
 
-    toast.success('Member assigned successfully!')
+    toast.success('Leadership transferred successfully!')
     setOpen(false)
     setSelectedProfileId('')
     router.refresh()
   }
 
+  // Filter out the current leader from the options
+  const eligibleMembers = members.filter(m => m.id !== currentLeadId)
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" size="sm" className="h-8" />
+          <Button variant="outline" size="sm" className="h-8 text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700" />
         }
       >
-        <UserPlusIcon className="mr-2 size-3.5" />
-        Assign Member
+        <CrownIcon className="mr-2 size-3.5" />
+        Pass Title
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-blue-600">
-            <UserPlusIcon className="size-5" />
-            Assign Member
+          <DialogTitle className="flex items-center gap-2 text-amber-600">
+            <CrownIcon className="size-5" />
+            Transfer Leadership
           </DialogTitle>
           <DialogDescription>
-            Select a member from your organization to add to this committee.
+            Select a member to pass your leadership title to. You will lose your leader privileges for this committee.
           </DialogDescription>
         </DialogHeader>
         <form action={onSubmit} className="space-y-4">
           <div className="space-y-2 py-4">
-            <Label htmlFor="profileId">Select Member</Label>
+            <Label htmlFor="newLeadId">Select New Leader</Label>
             <Select 
-              name="profileId" 
+              name="newLeadId" 
               disabled={isPending} 
               required
               value={selectedProfileId}
-              onValueChange={(val) => setSelectedProfileId(val || '')}
+              onValueChange={(val: string | null) => setSelectedProfileId(val || '')}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choose a member...">
                   {selectedProfileId 
-                    ? members.find(m => m.id === selectedProfileId)?.name 
+                    ? eligibleMembers.find(m => m.id === selectedProfileId)?.name || 'User'
                     : "Choose a member..."}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {members.map((member) => {
-                  const isAssigned = assignedMemberIds.has(member.id)
-                  return (
+                {eligibleMembers.length === 0 ? (
+                  <SelectItem value="none" disabled>No other members available</SelectItem>
+                ) : (
+                  eligibleMembers.map((member) => (
                     <SelectItem 
                       key={member.id} 
                       value={member.id}
-                      disabled={isAssigned}
                     >
-                      {member.name} {isAssigned && "(Already assigned)"}
+                      {member.name || 'User'}
                     </SelectItem>
-                  )
-                })}
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -142,14 +130,14 @@ export function AssignMemberDialog({ orgId, orgSlug, committeeId, members }: Ass
             <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isPending} className="bg-blue-600 hover:bg-blue-700 text-white">
+            <Button type="submit" disabled={isPending || eligibleMembers.length === 0} className="bg-amber-600 hover:bg-amber-700 text-white">
               {isPending ? (
                 <>
                   <Loader2Icon className="mr-2 size-4 animate-spin" />
-                  Assigning...
+                  Transferring...
                 </>
               ) : (
-                'Assign Member'
+                'Confirm Transfer'
               )}
             </Button>
           </DialogFooter>

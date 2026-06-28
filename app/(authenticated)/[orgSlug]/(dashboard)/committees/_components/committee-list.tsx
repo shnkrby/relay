@@ -7,6 +7,8 @@ import { Committee } from '@/types/database'
 import { AssignMemberDialog } from './assign-member-dialog'
 import { ViewMembersDialog } from './view-members-dialog'
 import { ManageCommitteeMenu } from './manage-committee-menu'
+import { TransferLeadershipDialog } from './transfer-leadership-dialog'
+import { LeaveCommitteeButton } from './leave-committee-button'
 import { Badge } from '@/components/ui/badge'
 
 interface CommitteeListProps {
@@ -15,9 +17,10 @@ interface CommitteeListProps {
   orgSlug: string
   role: string
   orgMembers: { id: string; name: string }[]
+  userId: string
 }
 
-export function CommitteeList({ committees, orgId, orgSlug, role, orgMembers }: CommitteeListProps) {
+export function CommitteeList({ committees, orgId, orgSlug, role, orgMembers, userId }: CommitteeListProps) {
   const isAdmin = role === 'admin' || role === 'owner'
 
   if (committees.length === 0) {
@@ -60,13 +63,38 @@ export function CommitteeList({ committees, orgId, orgSlug, role, orgMembers }: 
           </CardContent>
           <CardFooter className="pt-4 border-t bg-slate-50/50 dark:bg-slate-900/20 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ViewMembersDialog committeeId={committee.id} committeeName={committee.name} />
-              {isAdmin && (
+              <ViewMembersDialog 
+                committeeId={committee.id} 
+                committeeName={committee.name} 
+                orgId={orgId}
+                orgSlug={orgSlug}
+                isAdmin={isAdmin}
+                currentUserId={userId}
+                leadId={committee.lead_id}
+              />
+              {(isAdmin || committee.lead_id === userId) && (
                 <AssignMemberDialog 
                   orgId={orgId} 
                   orgSlug={orgSlug} 
                   committeeId={committee.id} 
                   members={orgMembers} 
+                />
+              )}
+              {committee.lead_id === userId && (
+                <TransferLeadershipDialog
+                  orgId={orgId}
+                  orgSlug={orgSlug}
+                  committeeId={committee.id}
+                  members={orgMembers}
+                  currentLeadId={userId}
+                />
+              )}
+              {(!isAdmin && committee.lead_id !== userId) && (
+                <LeaveCommitteeButton 
+                  orgId={orgId}
+                  orgSlug={orgSlug}
+                  committeeId={committee.id}
+                  profileId={userId}
                 />
               )}
             </div>

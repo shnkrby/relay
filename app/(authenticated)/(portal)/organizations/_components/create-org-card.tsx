@@ -53,7 +53,6 @@ export function CreateOrgCard() {
           </div>
           <div className="grid gap-2">
             <Label htmlFor="memberLimit" className="font-medium text-slate-700 dark:text-slate-200">Member Limit</Label>
-            <div className="flex items-center gap-4">
               <Input
                 id="memberLimit"
                 name="memberLimit"
@@ -61,9 +60,9 @@ export function CreateOrgCard() {
                 min="8"
                 defaultValue="8"
                 disabled={isNoLimit || isPending}
-                className="w-24 bg-gray-50/50 dark:bg-slate-900"
+                className="bg-gray-50/50 dark:bg-slate-900"
               />
-              <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 mt-2">
                 <input 
                   type="checkbox" 
                   checked={isNoLimit} 
@@ -73,7 +72,6 @@ export function CreateOrgCard() {
                 />
                 No Limit
               </label>
-            </div>
             {!isNoLimit && <p className="text-xs text-slate-500">Minimum 8 members including owner.</p>}
           </div>
           <Button type="submit" className="w-full mt-auto bg-purple-600 hover:bg-purple-700 text-white" disabled={isPending}>

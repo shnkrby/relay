@@ -118,27 +118,24 @@ export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [] }: Creat
             </div>
             <div className="space-y-2">
               <Label htmlFor="memberLimit">Member Limit</Label>
-              <div className="flex items-center gap-4">
-                <Input
-                  id="memberLimit"
-                  name="memberLimit"
-                  type="number"
-                  min="8"
-                  defaultValue="8"
-                  disabled={isNoLimit || isPending}
-                  className="w-24"
+              <Input
+                id="memberLimit"
+                name="memberLimit"
+                type="number"
+                min="8"
+                defaultValue="8"
+                disabled={isNoLimit || isPending}
+              />
+              <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300 mt-2">
+                <input 
+                  type="checkbox" 
+                  checked={isNoLimit} 
+                  onChange={(e) => setIsNoLimit(e.target.checked)}
+                  disabled={isPending}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-600"
                 />
-                <label className="flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
-                  <input 
-                    type="checkbox" 
-                    checked={isNoLimit} 
-                    onChange={(e) => setIsNoLimit(e.target.checked)}
-                    disabled={isPending}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                  />
-                  No Limit
-                </label>
-              </div>
+                No Limit
+              </label>
               {!isNoLimit && <p className="text-xs text-slate-500">Minimum 8 members including head.</p>}
             </div>
           </div>

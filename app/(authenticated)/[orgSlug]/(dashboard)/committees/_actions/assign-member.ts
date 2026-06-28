@@ -28,8 +28,19 @@ export async function assignMember(orgSlug: string, orgId: string, prevState: an
     .eq('profile_id', user.id)
     .single()
 
-  if (memberError || !memberData || (memberData.role !== 'owner' && memberData.role !== 'admin')) {
-    return { success: false, error: 'Unauthorized. Only admins can assign members.' }
+  const isAdmin = memberData && (memberData.role === 'owner' || memberData.role === 'admin')
+
+  // Check if current user is the committee leader
+  const { data: committee } = await supabase
+    .from('committees')
+    .select('lead_id')
+    .eq('id', committeeId)
+    .single()
+
+  const isLeader = committee?.lead_id === user.id
+
+  if (!isAdmin && !isLeader) {
+    return { success: false, error: 'Unauthorized. Only admins or the committee leader can assign members.' }
   }
 
   // Insert committee member

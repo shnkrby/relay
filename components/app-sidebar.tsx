@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboardIcon, CheckSquareIcon, CalendarIcon, UsersIcon, Settings2Icon, CircleHelpIcon, Building2Icon, ZapIcon } from "lucide-react"
+import { LayoutDashboardIcon, CheckSquareIcon, CalendarIcon, UsersIcon, Settings2Icon, CircleHelpIcon, Building2Icon, ZapIcon, ShieldCheckIcon } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
@@ -42,6 +42,11 @@ export function AppSidebar({
       title: "Tasks",
       url: `/${currentOrg.slug}/tasks`,
       icon: <CheckSquareIcon />,
+    },
+    {
+      title: "Leadership",
+      url: `/${currentOrg.slug}/leadership`,
+      icon: <ShieldCheckIcon />,
     },
     {
       title: "Events",

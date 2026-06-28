@@ -2,7 +2,9 @@
 
 import * as React from 'react'
 import { useState, useEffect } from 'react'
-import { UsersIcon, Loader2Icon } from 'lucide-react'
+import { UsersIcon, Loader2Icon, UserMinusIcon } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 import {
   Dialog,
@@ -27,6 +29,11 @@ import { getCommitteeMembers } from '../_actions/get-committee-members'
 interface ViewMembersDialogProps {
   committeeId: string
   committeeName: string
+  orgId?: string
+  orgSlug?: string
+  isAdmin?: boolean
+  currentUserId?: string
+  leadId?: string | null
 }
 
 interface MemberData {
@@ -36,11 +43,23 @@ interface MemberData {
   isLead: boolean
 }
 
-export function ViewMembersDialog({ committeeId, committeeName }: ViewMembersDialogProps) {
+export function ViewMembersDialog({ 
+  committeeId, 
+  committeeName, 
+  orgId, 
+  orgSlug, 
+  isAdmin, 
+  currentUserId, 
+  leadId 
+}: ViewMembersDialogProps) {
   const [open, setOpen] = useState(false)
   const [members, setMembers] = useState<MemberData[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [removingId, setRemovingId] = useState<string | null>(null)
+  const router = useRouter()
+
+  const canManage = isAdmin || currentUserId === leadId
 
   useEffect(() => {
     if (open) {
@@ -59,6 +78,31 @@ export function ViewMembersDialog({ committeeId, committeeName }: ViewMembersDia
       fetchMembers()
     }
   }, [open, committeeId])
+
+  async function handleKick(memberId: string) {
+    if (!orgSlug || !orgId) return
+    if (!confirm('Are you sure you want to remove this member?')) return
+
+    setRemovingId(memberId)
+    const formData = new FormData()
+    formData.set('committeeId', committeeId)
+    formData.set('profileId', memberId)
+    
+    // Import action dynamically to avoid top-level issues if needed, or we can just import at the top
+    const { removeMember } = await import('../_actions/remove-member')
+    const result = await removeMember(orgSlug, orgId, null, formData)
+    
+    setRemovingId(null)
+    
+    if (!result.success) {
+      toast.error(result.error)
+      return
+    }
+
+    toast.success('Member removed successfully.')
+    setMembers(members.filter(m => m.id !== memberId))
+    router.refresh()
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -104,6 +148,7 @@ export function ViewMembersDialog({ committeeId, committeeName }: ViewMembersDia
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead className="w-[100px]">Role</TableHead>
+                    {canManage && <TableHead className="w-[80px] text-right">Action</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -126,6 +171,26 @@ export function ViewMembersDialog({ committeeId, committeeName }: ViewMembersDia
                           </Badge>
                         )}
                       </TableCell>
+                      {canManage && (
+                        <TableCell className="text-right">
+                          {!member.isLead && (
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleKick(member.id)}
+                              disabled={removingId === member.id}
+                              title="Remove member"
+                            >
+                              {removingId === member.id ? (
+                                <Loader2Icon className="size-4 animate-spin" />
+                              ) : (
+                                <UserMinusIcon className="size-4" />
+                              )}
+                            </Button>
+                          )}
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))}
                 </TableBody>

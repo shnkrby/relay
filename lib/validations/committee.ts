@@ -14,3 +14,13 @@ export const assignMemberSchema = z.object({
   profileId: z.string().uuid("Invalid member ID."),
   committeeId: z.string().uuid("Invalid committee ID."),
 })
+
+export const transferLeadershipSchema = z.object({
+  newLeadId: z.string().uuid("Invalid member ID."),
+  committeeId: z.string().uuid("Invalid committee ID."),
+})
+
+export const removeMemberSchema = z.object({
+  profileId: z.string().uuid("Invalid member ID."),
+  committeeId: z.string().uuid("Invalid committee ID."),
+})

@@ -11,7 +11,8 @@ import {
   FieldSeparator,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { login, ActionResponse } from "@/app/(public)/(auth)/_actions/auth"
+import { login } from "@/app/(public)/(auth)/_actions/auth"
+import { ActionResponse } from "@/types/actions"
 
 const initialState: ActionResponse = {
   success: false,

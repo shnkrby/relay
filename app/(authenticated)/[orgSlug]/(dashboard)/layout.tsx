@@ -24,13 +24,18 @@ export default async function WorkspaceLayout({
   // Verify the user is a member of this organization
   const { data: org, error: orgError } = await supabase
     .from('organizations')
-    .select('id, name, slug')
+    .select('id, name, slug, is_setup_complete')
     .eq('slug', orgSlug)
     .single()
 
   if (orgError || !org) {
     // RLS will block if they aren't a member, or it doesn't exist
     redirect('/organizations')
+  }
+
+  // Redirect to setup if not complete
+  if (!org.is_setup_complete) {
+    redirect(`/${orgSlug}/setup`)
   }
 
   // Fetch all user organizations for the switcher and the role for the current org
