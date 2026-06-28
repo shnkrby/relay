@@ -6,11 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Committee } from '@/types/database'
 import { AssignMemberDialog } from './assign-member-dialog'
 import { ViewMembersDialog } from './view-members-dialog'
-import { ManageCommitteeMenu } from './manage-committee-menu'
 import { TransferLeadershipDialog } from './transfer-leadership-dialog'
 import { LeaveCommitteeButton } from './leave-committee-button'
 import { Badge } from '@/components/ui/badge'
-
+import { CommitteeActionsMenu } from './committee-actions-menu'
 interface CommitteeListProps {
   committees: Committee[]
   orgId: string
@@ -38,7 +37,7 @@ export function CommitteeList({ committees, orgId, orgSlug, role, orgMembers, us
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
       {committees.map((committee) => (
         <Card key={committee.id} className="shadow-sm flex flex-col">
           <CardHeader className="flex flex-row items-start justify-between pb-2">
@@ -82,50 +81,15 @@ export function CommitteeList({ committees, orgId, orgSlug, role, orgMembers, us
               </div>
             </div>
           </CardContent>
-          <CardFooter className="pt-4 border-t bg-slate-50/50 dark:bg-slate-900/20 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ViewMembersDialog 
-                committeeId={committee.id} 
-                committeeName={committee.name} 
-                orgId={orgId}
-                orgSlug={orgSlug}
-                isAdmin={isAdmin}
-                currentUserId={userId}
-                leadId={committee.lead_id}
-              />
-              {(isAdmin || committee.lead_id === userId) && (
-                <AssignMemberDialog 
-                  orgId={orgId} 
-                  orgSlug={orgSlug} 
-                  committeeId={committee.id} 
-                  members={orgMembers} 
-                />
-              )}
-              {committee.lead_id === userId && (
-                <TransferLeadershipDialog
-                  orgId={orgId}
-                  orgSlug={orgSlug}
-                  committeeId={committee.id}
-                  members={orgMembers}
-                  currentLeadId={userId}
-                />
-              )}
-              {(!isAdmin && committee.lead_id !== userId) && (
-                <LeaveCommitteeButton 
-                  orgId={orgId}
-                  orgSlug={orgSlug}
-                  committeeId={committee.id}
-                  profileId={userId}
-                />
-              )}
-            </div>
-            {isAdmin && (
-              <ManageCommitteeMenu 
-                committee={committee} 
-                orgId={orgId} 
-                orgSlug={orgSlug} 
-              />
-            )}
+          <CardFooter className="pt-4 border-t bg-slate-50/50 dark:bg-slate-900/20 flex justify-end">
+            <CommitteeActionsMenu
+              committee={committee}
+              orgId={orgId}
+              orgSlug={orgSlug}
+              isAdmin={isAdmin}
+              userId={userId}
+              orgMembers={orgMembers}
+            />
           </CardFooter>
         </Card>
       ))}

@@ -37,10 +37,15 @@ interface TransferLeadershipDialogProps {
   committeeId: string
   members: Member[]
   currentLeadId: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function TransferLeadershipDialog({ orgId, orgSlug, committeeId, members, currentLeadId }: TransferLeadershipDialogProps) {
-  const [open, setOpen] = useState(false)
+export function TransferLeadershipDialog({ orgId, orgSlug, committeeId, members, currentLeadId, open, onOpenChange }: TransferLeadershipDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = open !== undefined && onOpenChange !== undefined
+  const dialogOpen = isControlled ? open : internalOpen
+  const setDialogOpen = isControlled ? onOpenChange! : setInternalOpen
   const [isPending, setIsPending] = useState(false)
   const [selectedProfileId, setSelectedProfileId] = useState<string>('')
   const router = useRouter()
@@ -65,7 +70,7 @@ export function TransferLeadershipDialog({ orgId, orgSlug, committeeId, members,
     }
 
     toast.success('Leadership transferred successfully!')
-    setOpen(false)
+      setDialogOpen(false)
     setSelectedProfileId('')
     router.refresh()
   }
@@ -74,15 +79,17 @@ export function TransferLeadershipDialog({ orgId, orgSlug, committeeId, members,
   const eligibleMembers = members.filter(m => m.id !== currentLeadId)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button variant="outline" size="sm" className="h-8 text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700" />
-        }
-      >
-        <CrownIcon className="mr-2 size-3.5" />
-        Pass Title
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {!isControlled && (
+        <DialogTrigger
+          render={
+            <Button variant="outline" size="sm" className="h-8 text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700" />
+          }
+        >
+          <CrownIcon className="mr-2 size-3.5" />
+          Pass Title
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-amber-600">
@@ -127,7 +134,7 @@ export function TransferLeadershipDialog({ orgId, orgSlug, committeeId, members,
             </Select>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
+            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={isPending}>
               Cancel
             </Button>
             <Button type="submit" disabled={isPending || eligibleMembers.length === 0} className="bg-amber-600 hover:bg-amber-700 text-white">

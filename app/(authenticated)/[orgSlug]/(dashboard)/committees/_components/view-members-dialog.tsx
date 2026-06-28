@@ -34,6 +34,8 @@ interface ViewMembersDialogProps {
   isAdmin?: boolean
   currentUserId?: string
   leadId?: string | null
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 interface MemberData {
@@ -50,9 +52,14 @@ export function ViewMembersDialog({
   orgSlug, 
   isAdmin, 
   currentUserId, 
-  leadId 
+  leadId,
+  open,
+  onOpenChange
 }: ViewMembersDialogProps) {
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = open !== undefined && onOpenChange !== undefined
+  const dialogOpen = isControlled ? open : internalOpen
+  const setDialogOpen = isControlled ? onOpenChange! : setInternalOpen
   const [members, setMembers] = useState<MemberData[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -105,15 +112,15 @@ export function ViewMembersDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button variant="outline" size="sm" className="h-8" />
-        }
-      >
-        <UsersIcon className="mr-2 size-3.5" />
-        View Members
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {!isControlled && (
+        <DialogTrigger>
+          <Button variant="outline" size="sm" className="h-8">
+            <UsersIcon className="mr-2 size-3.5" />
+            View Members
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-2xl max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

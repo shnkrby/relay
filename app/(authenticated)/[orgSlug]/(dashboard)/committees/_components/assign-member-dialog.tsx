@@ -37,10 +37,15 @@ interface AssignMemberDialogProps {
   orgSlug: string
   committeeId: string
   members: Member[]
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-export function AssignMemberDialog({ orgId, orgSlug, committeeId, members }: AssignMemberDialogProps) {
-  const [open, setOpen] = useState(false)
+export function AssignMemberDialog({ orgId, orgSlug, committeeId, members, open, onOpenChange }: AssignMemberDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = open !== undefined && onOpenChange !== undefined
+  const dialogOpen = isControlled ? open : internalOpen
+  const setDialogOpen = isControlled ? onOpenChange! : setInternalOpen
   const [isPending, setIsPending] = useState(false)
   const [selectedProfileId, setSelectedProfileId] = useState<string>('')
   const [assignedMemberIds, setAssignedMemberIds] = useState<Set<string>>(new Set())
@@ -80,21 +85,23 @@ export function AssignMemberDialog({ orgId, orgSlug, committeeId, members }: Ass
     }
 
     toast.success('Member assigned successfully!')
-    setOpen(false)
+    setDialogOpen(false)
     setSelectedProfileId('')
     router.refresh()
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger
-        render={
-          <Button variant="outline" size="sm" className="h-8" />
-        }
-      >
-        <UserPlusIcon className="mr-2 size-3.5" />
-        Assign Member
-      </DialogTrigger>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {!isControlled && (
+        <DialogTrigger
+          render={
+            <Button variant="outline" size="sm" className="h-8" />
+          }
+        >
+          <UserPlusIcon className="mr-2 size-3.5" />
+          Assign Member
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-blue-600">
@@ -139,7 +146,7 @@ export function AssignMemberDialog({ orgId, orgSlug, committeeId, members }: Ass
             </Select>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isPending}>
+            <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={isPending}>
               Cancel
             </Button>
             <Button type="submit" disabled={isPending} className="bg-blue-600 hover:bg-blue-700 text-white">
