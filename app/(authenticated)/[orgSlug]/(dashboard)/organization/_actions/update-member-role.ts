@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createNotification } from '@/lib/notifications'
 
 export async function updateMemberRole(orgId: string, orgSlug: string, profileId: string, newRole: 'admin' | 'member') {
   const supabase = await createClient()
@@ -47,6 +48,16 @@ export async function updateMemberRole(orgId: string, orgSlug: string, profileId
     console.error('Update member role error:', updateError)
     return { success: false, error: `Database error: ${updateError.message}` }
   }
+
+  // Create notification for the user whose role changed
+  await createNotification({
+    recipientId: profileId,
+    orgId,
+    type: 'role_changed',
+    title: 'Role Updated',
+    message: `Your role in the organization has been updated to ${newRole}.`,
+    link: `/${orgSlug}/organization`
+  })
 
   revalidatePath(`/${orgSlug}/organization`)
   return { success: true }

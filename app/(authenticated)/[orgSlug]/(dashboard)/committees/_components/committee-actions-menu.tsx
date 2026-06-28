@@ -1,6 +1,8 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { MoreHorizontalIcon, UsersIcon, UserPlusIcon, ArrowRightFromLineIcon, PencilIcon, TrashIcon } from 'lucide-react';
+import { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { MoreHorizontalIcon, UsersIcon, UserPlusIcon, ArrowRightFromLineIcon, PencilIcon, TrashIcon, LogOutIcon, Loader2Icon } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -14,6 +16,7 @@ import { AssignMemberDialog } from './assign-member-dialog';
 import { TransferLeadershipDialog } from './transfer-leadership-dialog';
 import { EditCommitteeDialog } from './edit-committee-dialog';
 import { DeleteCommitteeDialog } from './delete-committee-dialog';
+import { removeMember } from '../_actions/remove-member';
 
 import { Committee } from '@/types/database';
 
@@ -39,6 +42,24 @@ export function CommitteeActionsMenu({
   const [transferOpen, setTransferOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [isLeaving, startLeaving] = useTransition();
+  const router = useRouter();
+
+  async function handleLeaveCommittee() {
+    if (!confirm('Are you sure you want to leave this committee?')) return;
+    startLeaving(async () => {
+      const formData = new FormData();
+      formData.set('committeeId', committee.id);
+      formData.set('profileId', userId);
+      const result = await removeMember(orgSlug, orgId, null, formData);
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success('You have left the committee.');
+      router.refresh();
+    });
+  }
 
 
   return (
@@ -56,17 +77,24 @@ export function CommitteeActionsMenu({
             View Members
           </DropdownMenuItem>
           {/* Assign Member */}
-          {(isAdmin || committee.lead_id === userId) && (
+          {isAdmin && (
             <DropdownMenuItem onClick={() => setAssignOpen(true)}>
               <UserPlusIcon className="mr-2 size-4" />
               Assign Member
             </DropdownMenuItem>
           )}
           {/* Transfer Leadership */}
-          {committee.lead_id === userId && (
+          {isAdmin && (
             <DropdownMenuItem onClick={() => setTransferOpen(true)}>
               <ArrowRightFromLineIcon className="mr-2 size-4" />
               Transfer Leadership
+            </DropdownMenuItem>
+          )}
+          {/* Leave Committee */}
+          {committee.lead_id !== userId && (
+            <DropdownMenuItem onClick={handleLeaveCommittee} disabled={isLeaving} className="text-orange-600 focus:text-orange-700">
+              {isLeaving ? <Loader2Icon className="mr-2 size-4 animate-spin" /> : <LogOutIcon className="mr-2 size-4" />}
+              Leave Committee
             </DropdownMenuItem>
           )}
           {isAdmin && (
@@ -113,7 +141,7 @@ export function CommitteeActionsMenu({
         orgSlug={orgSlug}
         committeeId={committee.id}
         members={orgMembers}
-        currentLeadId={userId}
+        currentLeadId={committee.lead_id || ''}
         open={transferOpen}
         onOpenChange={setTransferOpen}
       />

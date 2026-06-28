@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Building2Icon, Settings2Icon, CopyIcon, CheckIcon, RefreshCwIcon, Loader2Icon } from 'lucide-react'
+import { useState, useRef, useTransition } from 'react'
+import { Building2Icon, Settings2Icon, CopyIcon, CheckIcon, RefreshCwIcon, Loader2Icon, CameraIcon } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { updateOrgProfile } from '../_actions/update-org-profile'
 import { regenerateJoinCode } from '../_actions/regenerate-join-code'
+import { uploadOrgLogo } from '../_actions/upload-org-logo'
+import { EntityLogo } from '@/components/relay/entity-logo'
 
 interface ManageOrgDialogProps {
   org: {
@@ -18,6 +20,7 @@ interface ManageOrgDialogProps {
     description: string | null
     slug: string
     join_code: string
+    logo_url?: string | null
   }
 }
 
@@ -26,6 +29,9 @@ export function ManageOrgDialog({ org }: ManageOrgDialogProps) {
   const [isPending, setIsPending] = useState(false)
   const [isRegenPending, setIsRegenPending] = useState(false)
   const [isCopied, setIsCopied] = useState(false)
+  const [logoPreview, setLogoPreview] = useState<string | null>(org.logo_url || null)
+  const [isUploadingLogo, startLogoTransition] = useTransition()
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   const inviteLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${org.join_code}`
 
@@ -62,6 +68,29 @@ export function ManageOrgDialog({ org }: ManageOrgDialogProps) {
     setTimeout(() => setIsCopied(false), 2000)
   }
 
+  function handleLogoSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = () => setLogoPreview(reader.result as string)
+    reader.readAsDataURL(file)
+
+    const formData = new FormData()
+    formData.append('logo', file)
+
+    startLogoTransition(async () => {
+      const result = await uploadOrgLogo(org.id, org.slug, formData)
+      if (result.success) {
+        toast.success('Organization logo updated!')
+        if (result.logoUrl) setLogoPreview(result.logoUrl)
+      } else {
+        toast.error(result.error || 'Failed to upload logo.')
+        setLogoPreview(org.logo_url || null)
+      }
+    })
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
@@ -79,9 +108,56 @@ export function ManageOrgDialog({ org }: ManageOrgDialogProps) {
             Manage Organization
           </DialogTitle>
           <DialogDescription>
-            Update your organization details and manage your join code.
+            Update your organization details, logo, and manage your join code.
           </DialogDescription>
         </DialogHeader>
+
+        {/* Logo Upload Section */}
+        <div className="flex items-center gap-4 py-4 border-b">
+          <div className="relative group">
+            {logoPreview ? (
+              <div className="size-16 rounded-lg overflow-hidden border-2 border-slate-200 dark:border-slate-700">
+                <img src={logoPreview} alt={org.name} className="size-full object-cover" />
+              </div>
+            ) : (
+              <EntityLogo name={org.name} logoUrl={null} size="lg" />
+            )}
+            <button
+              onClick={() => logoInputRef.current?.click()}
+              disabled={isUploadingLogo}
+              className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 group-hover:bg-black/40 transition-colors cursor-pointer"
+            >
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                {isUploadingLogo ? (
+                  <Loader2Icon className="size-5 text-white animate-spin" />
+                ) : (
+                  <CameraIcon className="size-5 text-white" />
+                )}
+              </div>
+            </button>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-900 dark:text-white">Organization Logo</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">JPG, PNG, or WebP. Max 2MB.</p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-2 text-xs h-7"
+              onClick={() => logoInputRef.current?.click()}
+              disabled={isUploadingLogo}
+            >
+              {isUploadingLogo ? 'Uploading...' : 'Change Logo'}
+            </Button>
+          </div>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleLogoSelect}
+            className="hidden"
+          />
+        </div>
 
         <form action={onSubmit} className="space-y-6 pt-4">
           <div className="space-y-4">
