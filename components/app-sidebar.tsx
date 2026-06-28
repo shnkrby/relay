@@ -53,10 +53,16 @@ export function AppSidebar({
       icon: <CalendarIcon />,
     },
     {
+      title: "Duties",
+      url: `/${currentOrg.slug}/duties`,
+      icon: <CheckSquareIcon />,
+    },
+    {
       title: "Committees",
       url: `/${currentOrg.slug}/committees`,
       icon: <UsersIcon />,
     },
+
     {
       title: "Organization",
       url: `/${currentOrg.slug}/organization`,
