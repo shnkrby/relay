@@ -46,7 +46,7 @@ export function NotificationPopover({ notifications, unreadCount, orgId, orgSlug
         variant="ghost"
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        className="relative text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+        className="relative"
       >
         <BellIcon className="size-5" />
         {unreadCount > 0 && (
