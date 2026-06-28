@@ -7,6 +7,7 @@ import { Building2Icon, UserIcon } from 'lucide-react'
 import Link from 'next/link'
 import { AvatarUpload } from './_components/avatar-upload'
 import { ProfileForm } from './_components/profile-form'
+import { LeaveOrgButton } from './_components/leave-org-button'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -38,6 +39,7 @@ export default async function ProfilePage() {
     .eq('profile_id', user.id)
 
   const orgs = memberships?.map((m: any) => ({
+    id: m.organizations?.id,
     name: m.organizations?.name || 'Unknown',
     slug: m.organizations?.slug || '',
     role: m.role,
@@ -116,13 +118,15 @@ export default async function ProfilePage() {
           ) : (
             <div className="space-y-3">
               {orgs.map((org: any, i: number) => (
-                <Link
+                <div
                   key={i}
-                  href={`/${org.slug}`}
                   className="flex items-center justify-between p-3 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors group"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold text-sm">
+                  <Link
+                    href={`/${org.slug}`}
+                    className="flex items-center gap-3 flex-1"
+                  >
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-bold text-sm shrink-0">
                       {org.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
@@ -133,11 +137,14 @@ export default async function ProfilePage() {
                         Joined {new Date(org.joinedAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                       </p>
                     </div>
+                  </Link>
+                  <div className="flex items-center gap-3">
+                    <Badge variant="secondary" className={`capitalize text-xs ${roleColors[org.role] || roleColors.member}`}>
+                      {org.role}
+                    </Badge>
+                    <LeaveOrgButton orgId={org.id} orgSlug={org.slug} orgName={org.name} />
                   </div>
-                  <Badge variant="secondary" className={`capitalize text-xs ${roleColors[org.role] || roleColors.member}`}>
-                    {org.role}
-                  </Badge>
-                </Link>
+                </div>
               ))}
             </div>
           )}

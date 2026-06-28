@@ -1,11 +1,10 @@
 'use client'
 
 import * as React from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { ChevronsUpDown, Check, PlusCircle, LogOutIcon, Loader2Icon, UserIcon, Building2Icon } from 'lucide-react'
 import { logout } from "@/app/(public)/(auth)/_actions/auth"
-import { leaveOrganization } from "@/app/(authenticated)/[orgSlug]/(dashboard)/organization/_actions/leave-organization"
-import { toast } from 'sonner'
 
 import {
   DropdownMenu,
@@ -33,28 +32,21 @@ export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = 
   const router = useRouter()
   const { isMobile, state } = useSidebar()
   const [switchingTo, setSwitchingTo] = React.useState<string | null>(null)
-  const [isLeaving, startLeaving] = React.useTransition()
-
-  async function handleLeaveOrg() {
-    if (!confirm('Are you sure you want to leave this organization?')) return
-    
-    startLeaving(async () => {
-      const result = await leaveOrganization(currentOrg.slug, currentOrg.id)
-      if (!result.success) {
-        toast.error(result.error)
-        return
-      }
-      toast.success('You have left the organization.')
-      router.push('/organizations')
-    })
-  }
+  const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {
+    setMounted(true)
     setSwitchingTo(null)
   }, [currentOrg.id])
 
   return (
     <SidebarMenu>
+      {switchingTo && mounted && typeof document !== 'undefined' && document.getElementById('main-content')
+        ? createPortal(
+            <div className="absolute inset-0 z-[100] bg-background/40 backdrop-blur-sm transition-all duration-200" />,
+            document.getElementById('main-content')!
+          )
+        : null}
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -142,19 +134,6 @@ export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = 
           <span className="font-medium">My Profile</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={handleLeaveOrg}
-          disabled={isLeaving}
-          className="cursor-pointer p-2 text-orange-600 focus:text-orange-700"
-        >
-          {isLeaving ? (
-            <Loader2Icon className="mr-2 size-4 animate-spin" />
-          ) : (
-            <LogOutIcon className="mr-2 size-4" />
-          )}
-          <span className="font-medium">Leave Organization</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
         <form action={logout} className="w-full">
           <button type="submit" className="w-full text-left">
             <DropdownMenuItem className="cursor-pointer p-2 text-red-600 focus:text-red-700">
@@ -166,6 +145,8 @@ export function OrgSwitcher({ currentOrg, userOrgs, role = "Member", userName = 
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+
+
     </SidebarMenu>
   )
 }

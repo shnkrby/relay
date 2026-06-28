@@ -91,7 +91,7 @@ export default async function WorkspaceLayout({
       <SidebarInset>
         <SiteHeader currentOrg={org} role={formattedRole} notifications={notifications} unreadCount={unreadCount} />
         <div className="flex flex-1 flex-col">
-          <main className="flex-1 overflow-auto p-4 md:p-6 lg:p-8">
+          <main id="main-content" className="relative flex-1 overflow-auto p-4 md:p-6 lg:p-8">
             {children}
           </main>
         </div>
