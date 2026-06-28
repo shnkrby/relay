@@ -11,11 +11,12 @@ export async function createCommittee(orgSlug: string, orgId: string, prevState:
   const name = formData.get('name') as string
   const description = formData.get('description') as string | null
   const leadId = formData.get('leadId') as string
+  const executiveId = formData.get('executiveId') as string | null
   const memberLimitStr = formData.get('memberLimit') as string | null
   const memberLimit = memberLimitStr ? parseInt(memberLimitStr, 10) : null
   
   // Zod validation
-  const result = createCommitteeSchema.safeParse({ name, description, leadId, memberLimit })
+  const result = createCommitteeSchema.safeParse({ name, description, leadId, executiveId, memberLimit })
   if (!result.success) {
     return { success: false, error: result.error.issues[0].message }
   }
@@ -60,7 +61,7 @@ export async function createCommittee(orgSlug: string, orgId: string, prevState:
       org_id: orgId,
       name,
       description,
-      executive_id: user.id,
+      executive_id: executiveId || user.id,
       lead_id: leadId,
       member_limit: memberLimit,
     })

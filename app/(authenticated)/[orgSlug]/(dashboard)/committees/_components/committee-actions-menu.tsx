@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { MoreHorizontalIcon, UsersIcon, UserPlusIcon, ArrowRightFromLineIcon, PencilIcon, TrashIcon, LogOutIcon, Loader2Icon } from 'lucide-react';
+import { MoreHorizontalIcon, UsersIcon, UserPlusIcon, ArrowRightFromLineIcon, BuildingIcon, PencilIcon, TrashIcon, LogOutIcon, Loader2Icon } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import {
 import { ViewMembersDialog } from './view-members-dialog';
 import { AssignMemberDialog } from './assign-member-dialog';
 import { TransferLeadershipDialog } from './transfer-leadership-dialog';
+import { TransferExecutiveDialog } from './transfer-executive-dialog';
 import { EditCommitteeDialog } from './edit-committee-dialog';
 import { DeleteCommitteeDialog } from './delete-committee-dialog';
 import { removeMember } from '../_actions/remove-member';
@@ -26,7 +27,7 @@ interface CommitteeActionsMenuProps {
   orgSlug: string;
   isAdmin: boolean;
   userId: string;
-  orgMembers: { id: string; name: string }[];
+  orgMembers: { id: string; name: string; role?: string }[];
 }
 
 export function CommitteeActionsMenu({
@@ -40,6 +41,7 @@ export function CommitteeActionsMenu({
   const [viewOpen, setViewOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
+  const [transferExecutiveOpen, setTransferExecutiveOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [isLeaving, startLeaving] = useTransition();
@@ -65,11 +67,11 @@ export function CommitteeActionsMenu({
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger>
+        <DropdownMenuTrigger render={
           <button className="p-1.5 rounded-md text-slate-400 hover:text-slate-900 hover:bg-slate-100 dark:hover:text-white dark:hover:bg-slate-800 transition-colors">
             <MoreHorizontalIcon className="size-4" />
           </button>
-        </DropdownMenuTrigger>
+        } />
         <DropdownMenuContent align="end" className="w-56">
           {/* View Members */}
           <DropdownMenuItem onClick={() => setViewOpen(true)}>
@@ -88,6 +90,13 @@ export function CommitteeActionsMenu({
             <DropdownMenuItem onClick={() => setTransferOpen(true)}>
               <ArrowRightFromLineIcon className="mr-2 size-4" />
               Transfer Leadership
+            </DropdownMenuItem>
+          )}
+          {/* Transfer/Assign Executive */}
+          {isAdmin && (
+            <DropdownMenuItem onClick={() => setTransferExecutiveOpen(true)}>
+              <BuildingIcon className="mr-2 size-4" />
+              {committee.executive_id ? 'Transfer Executive' : 'Assign Executive'}
             </DropdownMenuItem>
           )}
           {/* Leave Committee */}
@@ -144,6 +153,15 @@ export function CommitteeActionsMenu({
         currentLeadId={committee.lead_id || ''}
         open={transferOpen}
         onOpenChange={setTransferOpen}
+      />
+      <TransferExecutiveDialog
+        orgId={orgId}
+        orgSlug={orgSlug}
+        committeeId={committee.id}
+        members={orgMembers}
+        currentExecutiveId={committee.executive_id || ''}
+        open={transferExecutiveOpen}
+        onOpenChange={setTransferExecutiveOpen}
       />
       {isAdmin && (
         <>

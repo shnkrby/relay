@@ -8,6 +8,7 @@ export const createCommitteeSchema = z.object({
   }),
   description: z.string().max(250, { message: "Description must not exceed 250 characters." }).optional().nullable(),
   leadId: z.string().uuid("Please select a valid committee head."),
+  executiveId: z.string().uuid("Invalid executive ID.").optional().nullable(),
   memberLimit: z.number().min(8, { message: 'Minimum members must be at least 8.' }).nullable().optional(),
 })
 
@@ -27,6 +28,11 @@ export const assignMemberSchema = z.object({
 
 export const transferLeadershipSchema = z.object({
   newLeadId: z.string().uuid("Invalid member ID."),
+  committeeId: z.string().uuid("Invalid committee ID."),
+})
+
+export const transferExecutiveSchema = z.object({
+  newExecutiveId: z.string().uuid("Invalid member ID."),
   committeeId: z.string().uuid("Invalid committee ID."),
 })
 

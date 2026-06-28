@@ -44,19 +44,24 @@ export default async function CommitteesPage({
   const committees = await getCommittees(org.id, user.id, role)
   const isLeaderOfAny = committees.some((c: any) => c.lead_id === user.id)
 
-  let orgMembers: { id: string; name: string }[] = []
+  let orgMembers: { id: string; name: string, role: string }[] = []
   const { data: members } = await supabase
     .from('org_members')
-    .select('profile_id, profiles(id, full_name, email)')
+    .select('profile_id, role, profiles(id, full_name, email)')
     .eq('org_id', org.id)
 
   if (members) {
     orgMembers = members
       .map((m: any) => {
         const profile = m.profiles ? (Array.isArray(m.profiles) ? m.profiles[0] : m.profiles) : null;
+        let fallbackName = 'Unknown Member';
+        if (m.profile_id === user.id) {
+          fallbackName = m.role === 'owner' ? 'You (Owner)' : m.role === 'admin' ? 'You (Admin)' : 'You';
+        }
         return {
           id: m.profile_id,
-          name: profile?.full_name || profile?.email?.split('@')[0] || (m.profile_id === user.id ? 'You (Owner)' : 'Unknown Member'),
+          name: profile?.full_name || profile?.email?.split('@')[0] || fallbackName,
+          role: m.role || 'member'
         }
       })
   }
@@ -77,7 +82,7 @@ export default async function CommitteesPage({
           </p>
         </div>
         {isAdmin && (
-          <CreateCommitteeDialog orgId={org.id} orgSlug={orgSlug} orgMembers={orgMembers} />
+          <CreateCommitteeDialog orgId={org.id} orgSlug={orgSlug} orgMembers={orgMembers} currentUserId={user.id} />
         )}
       </div>
 
