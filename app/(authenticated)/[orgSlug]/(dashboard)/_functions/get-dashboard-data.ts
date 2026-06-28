@@ -1,5 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 
+function timeAgo(dateStr: string): string {
+  const now = new Date()
+  const date = new Date(dateStr)
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHrs = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Just now'
+  if (diffMins < 60) return `${diffMins}m ago`
+  if (diffHrs < 24) return `${diffHrs}h ago`
+  if (diffDays < 7) return `${diffDays}d ago`
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 export async function getDashboardData(orgId: string, userId: string) {
   const supabase = await createClient()
 
@@ -8,8 +23,11 @@ export async function getDashboardData(orgId: string, userId: string) {
     openBatonsResult,
     completedBatonsResult,
     teamMembersResult,
+    committeesResult,
+    overdueTasksResult,
     recentTasksResult,
-    eventsResult
+    eventsResult,
+    myTasksResult
   ] = await Promise.all([
     // Active Events Count
     supabase
@@ -18,7 +36,7 @@ export async function getDashboardData(orgId: string, userId: string) {
       .eq('org_id', orgId)
       .eq('status', 'active'),
 
-    // My Open Batons
+    // My Open Tasks
     supabase
       .from('tasks')
       .select('id, event_duties!inner(events!inner(org_id))', { count: 'exact', head: true })
@@ -26,7 +44,7 @@ export async function getDashboardData(orgId: string, userId: string) {
       .eq('assignee_id', userId)
       .in('status', ['pending', 'in_progress']),
 
-    // Completed Batons
+    // Completed Tasks
     supabase
       .from('tasks')
       .select('id, event_duties!inner(events!inner(org_id))', { count: 'exact', head: true })
@@ -39,6 +57,20 @@ export async function getDashboardData(orgId: string, userId: string) {
       .from('org_members')
       .select('profile_id', { count: 'exact', head: true })
       .eq('org_id', orgId),
+
+    // Committees Count
+    supabase
+      .from('committees')
+      .select('id', { count: 'exact', head: true })
+      .eq('org_id', orgId),
+
+    // Overdue Tasks Count (tasks past due date that are not completed)
+    supabase
+      .from('tasks')
+      .select('id, event_duties!inner(events!inner(org_id))', { count: 'exact', head: true })
+      .eq('event_duties.events.org_id', orgId)
+      .in('status', ['pending', 'in_progress'])
+      .lt('due_date', new Date().toISOString()),
 
     // Recent Activity (Tasks created recently in this org)
     supabase
@@ -53,15 +85,17 @@ export async function getDashboardData(orgId: string, userId: string) {
       `)
       .eq('event_duties.events.org_id', orgId)
       .order('created_at', { ascending: false })
-      .limit(5),
+      .limit(6),
 
-    // Event Progress (Up to 4 active events with their task counts)
+    // Event Progress (Up to 4 active/upcoming events with their task counts)
     supabase
       .from('events')
       .select(`
         id,
         title,
         status,
+        start_date,
+        end_date,
         event_duties (
           tasks (
             id,
@@ -70,8 +104,32 @@ export async function getDashboardData(orgId: string, userId: string) {
         )
       `)
       .eq('org_id', orgId)
-      .eq('status', 'active')
-      .limit(4)
+      .in('status', ['active', 'upcoming'])
+      .limit(4),
+
+    // My Tasks (for the My Tasks Panel)
+    supabase
+      .from('tasks')
+      .select(`
+        id,
+        title,
+        status,
+        priority,
+        due_date,
+        event_duties!inner (
+          id,
+          name,
+          events!inner (
+            org_id,
+            title
+          )
+        )
+      `)
+      .eq('event_duties.events.org_id', orgId)
+      .eq('assignee_id', userId)
+      .in('status', ['pending', 'in_progress'])
+      .order('created_at', { ascending: false })
+      .limit(8)
   ])
 
   const colors = [
@@ -92,34 +150,54 @@ export async function getDashboardData(orgId: string, userId: string) {
     return {
       name: assigneeName,
       action: `${action} "${task.title}"`,
-      time: new Date(task.created_at).toLocaleDateString(),
+      time: timeAgo(task.created_at),
       color: colorTheme.bg
     }
   })
 
-  const eventProgress = (eventsResult.data || []).map((event: any, index: number) => {
-    // Flatten tasks from all event duties into a single array
+  const eventProgress = (eventsResult.data || []).map((event: any) => {
     const tasks = event.event_duties?.flatMap((duty: any) => duty.tasks || []) || []
     const total = tasks.length
     const current = tasks.filter((t: any) => t.status === 'completed').length
-    const colorTheme = colors[index % colors.length]
-    
+
     return {
-      label: event.title,
-      current,
-      total,
-      color: colorTheme.color,
-      bullet: colorTheme.bullet,
-      pct: total > 0 ? `${(current / total) * 100}%` : '0%'
+      id: event.id,
+      title: event.title,
+      status: event.status,
+      startDate: event.start_date,
+      endDate: event.end_date,
+      completedTasks: current,
+      totalTasks: total,
+    }
+  })
+
+  const myTasks = (myTasksResult.data || []).map((task: any) => {
+    const duty = task.event_duties
+    const dutyData = Array.isArray(duty) ? duty[0] : duty
+    const event = dutyData?.events
+    const eventData = Array.isArray(event) ? event[0] : event
+
+    return {
+      id: task.id,
+      title: task.title,
+      status: task.status as 'pending' | 'in_progress' | 'completed',
+      priority: task.priority as 'low' | 'medium' | 'high',
+      dutyName: dutyData?.name || 'Unknown Duty',
+      eventTitle: eventData?.title || 'Unknown Event',
+      dueDate: task.due_date,
+      dutyId: dutyData?.id || '',
     }
   })
 
   return {
     activeEventsCount: activeEventsResult.count || 0,
-    openBatonsCount: openBatonsResult.count || 0,
-    completedBatonsCount: completedBatonsResult.count || 0,
+    openTasksCount: openBatonsResult.count || 0,
+    completedTasksCount: completedBatonsResult.count || 0,
     teamMembersCount: teamMembersResult.count || 0,
+    committeesCount: committeesResult.count || 0,
+    overdueTasksCount: overdueTasksResult.count || 0,
     activityFeed,
-    eventProgress
+    eventProgress,
+    myTasks,
   }
 }
