@@ -36,10 +36,10 @@ export default async function OrganizationsGatewayPage() {
 
       <div className="flex w-full max-w-6xl flex-col items-center gap-12 z-10">
         <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
             {hasOrgs ? 'Welcome to your Workspace' : 'Begin your Journey'}
           </h1>
-          <p className="mt-4 text-lg md:text-xl text-slate-600 dark:text-slate-400">
+          <p className="mt-4 text-lg md:text-xl text-muted-foreground">
             {hasOrgs 
               ? 'Select an organization to continue where you left off.' 
               : 'Join an existing organization with a code, or create a fresh workspace from scratch.'}

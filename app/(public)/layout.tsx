@@ -29,7 +29,7 @@ export default function RootLayout({
       className={`${roboto.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
+      <body className="min-h-full flex flex-col bg-background text-foreground">
         <NextTopLoader color="#2563eb" showSpinner={false} />
         <ThemeProvider
           attribute="class"
