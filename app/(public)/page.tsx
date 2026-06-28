@@ -6,7 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 flex flex-col font-sans selection:bg-blue-200 dark:selection:bg-blue-900">
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans selection:bg-blue-200 dark:selection:bg-blue-900">
       
       {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md">

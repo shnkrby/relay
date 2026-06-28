@@ -130,7 +130,7 @@ export function ManageBoardDialog({ orgId, orgSlug, members, currentUserId, vaca
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger 
         render={
-          <Button variant="outline" className="text-primary border-primary/20 hover:bg-primary/10" />
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white" />
         }
       >
         <Settings2Icon className="mr-2 size-4" />
