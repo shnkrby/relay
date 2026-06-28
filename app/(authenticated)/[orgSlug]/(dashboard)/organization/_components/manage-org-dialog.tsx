@@ -33,8 +33,6 @@ export function ManageOrgDialog({ org }: ManageOrgDialogProps) {
   const [isUploadingLogo, startLogoTransition] = useTransition()
   const logoInputRef = useRef<HTMLInputElement>(null)
 
-  const inviteLink = `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${org.join_code}`
-
   async function onSubmit(formData: FormData) {
     setIsPending(true)
     const result = await updateOrgProfile(org.id, org.slug, null, formData)
@@ -62,9 +60,9 @@ export function ManageOrgDialog({ org }: ManageOrgDialogProps) {
   }
 
   function handleCopy() {
-    navigator.clipboard.writeText(inviteLink)
+    navigator.clipboard.writeText(org.join_code)
     setIsCopied(true)
-    toast.success('Invite link copied!')
+    toast.success('Relay Code copied!')
     setTimeout(() => setIsCopied(false), 2000)
   }
 
@@ -185,12 +183,12 @@ export function ManageOrgDialog({ org }: ManageOrgDialogProps) {
             </div>
 
             <div className="space-y-2 pt-2 border-t mt-4">
-              <Label className="mt-2 block">Invite Link</Label>
+              <Label className="mt-2 block">Relay Code</Label>
               <div className="flex gap-2">
                 <Input 
                   readOnly 
-                  value={inviteLink} 
-                  className="bg-slate-50 font-mono text-sm"
+                  value={org.join_code} 
+                  className="bg-slate-50 font-mono text-sm tracking-wider text-center font-bold"
                 />
                 <Button type="button" variant="secondary" onClick={handleCopy}>
                   {isCopied ? <CheckIcon className="size-4 text-green-600" /> : <CopyIcon className="size-4" />}
