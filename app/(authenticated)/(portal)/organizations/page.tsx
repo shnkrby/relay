@@ -1,5 +1,4 @@
-import { JoinOrgCard } from './_components/join-org-card'
-import { CreateOrgCard } from './_components/create-org-card'
+import { OrgActionSelector } from './_components/org-action-selector'
 import { OrgList } from './_components/org-list'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
@@ -30,32 +29,28 @@ export default async function OrganizationsGatewayPage() {
   const hasOrgs = userOrgs && userOrgs.length > 0
 
   return (
-    <div className="flex w-full max-w-5xl flex-col items-center gap-10 mt-10">
-      <div className="flex flex-col items-center text-center">
-        <div className="mb-6 flex size-12 items-center justify-center rounded-xl bg-blue-600 text-white shadow-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <div className="relative min-h-[calc(100vh-4rem)] w-full flex flex-col items-center py-16 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-500/10 dark:bg-blue-600/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-500/10 dark:bg-purple-600/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+
+      <div className="flex w-full max-w-6xl flex-col items-center gap-12 z-10">
+        <div className="flex flex-col items-center text-center max-w-2xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600 dark:from-white dark:to-slate-300">
+            {hasOrgs ? 'Welcome to your Workspace' : 'Begin your Journey'}
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-slate-600 dark:text-slate-400">
+            {hasOrgs 
+              ? 'Select an organization to continue where you left off.' 
+              : 'Join an existing organization with a code, or create a fresh workspace from scratch.'}
+          </p>
         </div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {hasOrgs ? 'Welcome back to Relay' : 'You\'re in. Now pick your path.'}
-        </h1>
-        <p className="mt-2 text-lg text-slate-600 dark:text-slate-400 max-w-lg">
-          {hasOrgs 
-            ? 'Select an organization to enter your workspace.' 
-            : 'Join an existing organization with a code, or create a fresh workspace from scratch.'}
-        </p>
-      </div>
 
-      {hasOrgs && <OrgList organizations={userOrgs as any} />}
-
-      <div className="w-full flex flex-col gap-4">
-        {hasOrgs && (
-          <h2 className="text-xl font-semibold text-slate-900 dark:text-white mt-4">
-            Or create / join another
-          </h2>
-        )}
-        <div className="grid w-full gap-8 md:grid-cols-2">
-          <JoinOrgCard />
-          <CreateOrgCard />
+        <div className="w-full mt-4">
+          <div className="grid w-full gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 auto-rows-fr">
+            {hasOrgs && <OrgList organizations={userOrgs as any} />}
+            <OrgActionSelector />
+          </div>
         </div>
       </div>
     </div>
