@@ -3,18 +3,20 @@
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation"
-import { BellIcon } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Organization } from "@/types/database"
+import { NotificationPopover } from "@/components/relay/notification-popover"
 
 type PickedOrg = Pick<Organization, 'id' | 'name' | 'slug'>
 
 interface SiteHeaderProps {
   currentOrg: PickedOrg;
   role?: string;
+  notifications?: any[];
+  unreadCount?: number;
 }
 
-export function SiteHeader({ currentOrg, role = "Member" }: SiteHeaderProps) {
+export function SiteHeader({ currentOrg, role = "Member", notifications = [], unreadCount = 0 }: SiteHeaderProps) {
   const pathname = usePathname()
   
   // Basic logic to determine current page name from URL
@@ -23,7 +25,7 @@ export function SiteHeader({ currentOrg, role = "Member" }: SiteHeaderProps) {
   const pageName = lastSegment === segments[0] ? 'Dashboard' : lastSegment.charAt(0).toUpperCase() + lastSegment.slice(1)
 
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center justify-between gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height) px-4 lg:px-6 bg-white dark:bg-slate-950">
+    <header className="sticky top-0 z-50 flex h-(--header-height) shrink-0 items-center justify-between gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height) px-4 lg:px-6 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-slate-950/95 dark:supports-[backdrop-filter]:bg-slate-950/60">
       <div className="flex items-center gap-1 lg:gap-2">
         <SidebarTrigger className="-ml-1" />
         <Separator
@@ -42,10 +44,12 @@ export function SiteHeader({ currentOrg, role = "Member" }: SiteHeaderProps) {
       
       <div className="flex items-center gap-4">
         <ThemeToggle />
-        <button className="relative text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
-          <BellIcon className="size-5" />
-          <span className="absolute top-0 right-0 size-2 bg-blue-600 rounded-full border border-white dark:border-slate-950"></span>
-        </button>
+        <NotificationPopover
+          notifications={notifications}
+          unreadCount={unreadCount}
+          orgId={currentOrg.id}
+          orgSlug={currentOrg.slug}
+        />
       </div>
     </header>
   )
