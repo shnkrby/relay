@@ -38,11 +38,6 @@ export function AppSidebar({
       icon: <LayoutDashboardIcon />,
     },
     {
-      title: "Tasks",
-      url: `/${currentOrg.slug}/tasks`,
-      icon: <CheckSquareIcon />,
-    },
-    {
       title: "Leadership",
       url: `/${currentOrg.slug}/leadership`,
       icon: <ShieldCheckIcon />,
