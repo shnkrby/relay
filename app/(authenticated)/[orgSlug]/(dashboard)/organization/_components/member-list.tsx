@@ -2,7 +2,7 @@
 
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ShieldIcon, MailIcon, CalendarIcon } from 'lucide-react'
+import { ShieldIcon, MailIcon, CalendarIcon, UserIcon, BriefcaseBusinessIcon } from 'lucide-react'
 import { ManageMemberMenu } from './manage-member-menu'
 
 interface Member {
@@ -12,6 +12,7 @@ interface Member {
   name: string
   email: string
   avatarUrl?: string
+  executiveTitle?: string
 }
 
 interface MemberListProps {
@@ -40,27 +41,41 @@ export function MemberList({ members, org, currentUserId, isAdmin }: MemberListP
                   </span>
                 )}
               </div>
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <CardTitle className="text-lg font-semibold leading-none flex items-center gap-2">
                   {member.name}
                   {member.id === currentUserId && (
                     <Badge variant="outline" className="text-[10px] h-4 px-1.5 font-normal">You</Badge>
                   )}
                 </CardTitle>
-                <Badge 
-                  variant="secondary" 
-                  className={`
-                    mt-1
-                    ${member.role === 'owner' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-none' : ''}
-                    ${member.role === 'admin' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-none' : ''}
-                    ${member.role === 'member' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-none' : ''}
-                  `}
-                >
-                  {(member.role === 'owner' || member.role === 'admin') && (
-                    <ShieldIcon className="mr-1 size-3" />
+                <div className="flex flex-wrap gap-2 mt-1">
+                  <Badge 
+                    variant="secondary" 
+                    className={`
+                      ${member.role === 'owner' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-none' : ''}
+                      ${member.role === 'admin' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 border-none' : ''}
+                      ${member.role === 'member' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border-none' : ''}
+                    `}
+                  >
+                    {(member.role === 'owner' || member.role === 'admin') ? (
+                      <ShieldIcon className="mr-1 size-3" />
+                    ) : (
+                      <UserIcon className="mr-1 size-3" />
+                    )}
+                    {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                  </Badge>
+
+                  {/* Executive Tag */}
+                  {(member.executiveTitle || member.role === 'owner' || member.role === 'admin') && (
+                    <Badge 
+                      variant="secondary" 
+                      className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border-none"
+                    >
+                      <BriefcaseBusinessIcon className="mr-1 size-3" />
+                      {member.executiveTitle || 'Executive'}
+                    </Badge>
                   )}
-                  {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
-                </Badge>
+                </div>
               </div>
             </div>
             

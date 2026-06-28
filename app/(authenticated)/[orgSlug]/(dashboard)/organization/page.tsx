@@ -42,7 +42,7 @@ export default async function OrganizationPage({
   // Fetch all members for the roster
   const { data: membersData } = await supabase
     .from('org_members')
-    .select('profile_id, role, joined_at, profiles(id, full_name, email, avatar_url)')
+    .select('profile_id, role, executive_title, joined_at, profiles(id, full_name, email, avatar_url)')
     .eq('org_id', org.id)
     .order('joined_at', { ascending: true })
 
@@ -51,6 +51,7 @@ export default async function OrganizationPage({
     return {
       id: m.profile_id,
       role: m.role,
+      executiveTitle: m.executive_title,
       joinedAt: m.joined_at,
       name: profile?.full_name || profile?.email?.split('@')[0] || 'Unknown Member',
       email: profile?.email || '',

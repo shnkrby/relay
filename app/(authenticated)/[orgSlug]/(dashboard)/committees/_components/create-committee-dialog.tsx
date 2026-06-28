@@ -31,18 +31,21 @@ import { createCommittee } from '../_actions/create-committee'
 interface Member {
   id: string
   name: string
+  role?: string
 }
 
 interface CreateCommitteeDialogProps {
   orgId: string
   orgSlug: string
   orgMembers?: Member[]
+  currentUserId?: string
 }
 
-export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [] }: CreateCommitteeDialogProps) {
+export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [], currentUserId }: CreateCommitteeDialogProps) {
   const [open, setOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
   const [selectedLeadId, setSelectedLeadId] = useState<string>('')
+  const [selectedExecutiveId, setSelectedExecutiveId] = useState<string>(currentUserId || '')
   const [isNoLimit, setIsNoLimit] = useState(true)
   const router = useRouter()
 
@@ -54,6 +57,7 @@ export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [] }: Creat
 
     setIsPending(true)
     formData.set('leadId', selectedLeadId)
+    formData.set('executiveId', selectedExecutiveId)
 
     const result = await createCommittee(orgSlug, orgId, null, formData)
     setIsPending(false)
@@ -66,6 +70,7 @@ export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [] }: Creat
     toast.success('Committee created successfully!')
     setOpen(false)
     setSelectedLeadId('')
+    setSelectedExecutiveId(currentUserId || '')
     router.refresh()
   }
 
@@ -83,7 +88,7 @@ export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [] }: Creat
         <DialogHeader>
           <DialogTitle>Create a New Committee</DialogTitle>
           <DialogDescription>
-            As an Executive, you will automatically be assigned as the <strong className="text-foreground">Executive-in-Charge</strong> of this committee. You can appoint a Committee Lead to handle day-to-day operations.
+            You can assign an <strong className="text-foreground">Executive-in-Charge</strong> to oversee this committee, and appoint a Committee Lead to handle day-to-day operations.
           </DialogDescription>
         </DialogHeader>
         <form action={onSubmit} className="space-y-4">
@@ -102,6 +107,33 @@ export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [] }: Creat
                 className="resize-none"
                 rows={3}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="executiveId">Executive-in-Charge</Label>
+              <Select 
+                name="executiveId" 
+                disabled={isPending} 
+                required
+                value={selectedExecutiveId}
+                onValueChange={(val: string | null) => setSelectedExecutiveId(val || '')}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Assign an executive...">
+                    {selectedExecutiveId 
+                      ? orgMembers.find(m => m.id === selectedExecutiveId)?.name 
+                      : "Assign an executive..."}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {orgMembers
+                    .filter(m => m.role === 'admin' || m.role === 'owner')
+                    .map((member) => (
+                    <SelectItem key={member.id} value={member.id}>
+                      {member.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="leadId">Committee Lead (Day-to-day Manager)</Label>
