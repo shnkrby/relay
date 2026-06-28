@@ -14,7 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
-  title: "Relay - Organization Task Management",
+  title: "Relay",
   description: "The modern operating system for organizations.",
 };
 

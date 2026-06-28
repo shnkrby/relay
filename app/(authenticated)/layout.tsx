@@ -15,7 +15,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NextTopLoader from 'nextjs-toploader';
 
 export const metadata: Metadata = {
-  title: "Relay - Dashboard",
+  title: "Relay",
   description: "Relay Task Management System",
 };
 
