@@ -20,6 +20,7 @@ import { signup } from "@/app/(public)/(auth)/_actions/auth"
 import { ActionResponse } from "@/types/actions"
 import { createClient } from "@/lib/supabase/client"
 import { FieldSeparator } from "@/components/ui/field"
+import Image from "next/image"
 
 const initialState: ActionResponse = {
   success: false,
@@ -39,8 +40,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   }
 
   return (
-    <Card className="bg-white dark:bg-slate-900 shadow-sm border-slate-200 dark:border-slate-800" {...props}>
-      <CardHeader>
+    <Card className="shadow-sm" {...props}>
+      <CardHeader className="flex flex-col items-center text-center">
+        <a href="/" className="flex items-center justify-center gap-2 font-medium mb-2">
+          <Image src="/logo.png" alt="Relay Logo" width={32} height={32} className="rounded-md" />
+          <span className="text-xl">Relay</span>
+        </a>
         <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
         <CardDescription>
           Enter your information below to create your account
