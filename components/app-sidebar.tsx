@@ -15,6 +15,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
+import Image from "next/image"
 import { Organization } from "@/types/database"
 import { OrgSwitcher } from "@/components/relay/org-switcher"
 import { EntityLogo } from "@/components/relay/entity-logo"
@@ -75,8 +76,8 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/organizations" />}>
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-blue-600 text-white">
-                <ZapIcon className="size-5 fill-current" />
+              <div className="flex aspect-square size-8 items-center justify-center">
+                <Image src="/logo.png" alt="Relay Logo" width={32} height={32} className="rounded-lg" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
                 <span className="font-semibold text-lg tracking-tight">Relay</span>
