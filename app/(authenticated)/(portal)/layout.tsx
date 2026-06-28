@@ -1,4 +1,4 @@
-import { Activity } from 'lucide-react'
+import { ZapIcon } from 'lucide-react'
 import { ProfileTrigger } from '@/components/profile-trigger'
 import { ThemeToggle } from '@/components/theme-toggle'
 export default function PortalLayout({
@@ -9,9 +9,9 @@ export default function PortalLayout({
   return (
     <div className="flex min-h-screen w-full flex-col bg-slate-50 dark:bg-slate-950">
       <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-white dark:bg-slate-900 px-6">
-        <div className="flex items-center gap-2 font-medium text-primary">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-            <Activity className="size-5" />
+        <div className="flex items-center gap-2 font-medium text-blue-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white">
+            <ZapIcon className="size-5 fill-current" />
           </div>
           <span className="text-xl font-bold text-slate-900 dark:text-white">Relay</span>
         </div>
