@@ -36,9 +36,6 @@ export function SiteHeader({ currentOrg, role = "Member", notifications = [], un
           <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
             {currentOrg.name} / <span className="text-slate-900 dark:text-white font-semibold">{pageName}</span>
           </span>
-          <span className="px-2 py-0.5 rounded-full border bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-500 dark:text-slate-400">
-            {role}
-          </span>
         </div>
       </div>
       
