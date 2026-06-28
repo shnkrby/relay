@@ -3,6 +3,7 @@ export type OrgRole = 'owner' | 'admin' | 'member';
 export type TaskStatus = 'pending' | 'in_progress' | 'completed';
 export type EventStatus = 'upcoming' | 'active' | 'completed' | 'cancelled';
 export type PriorityLevel = 'low' | 'medium' | 'high';
+export type NotificationType = 'task_assigned' | 'task_completed' | 'duty_assigned' | 'event_created' | 'role_changed' | 'member_joined';
 
 // Tables
 export interface Profile {
@@ -38,6 +39,7 @@ export interface Committee {
   executive_id: string | null; // UUID
   lead_id: string | null; // UUID
   member_limit: number | null; // INTEGER
+  logo_url: string | null; // TEXT
   created_at: string; // TIMESTAMPTZ
 }
 
@@ -77,5 +79,17 @@ export interface Task {
   due_date: string | null; // TIMESTAMPTZ
   overdue_reason: string | null; // TEXT
   completion_report: string | null; // TEXT
+  created_at: string; // TIMESTAMPTZ
+}
+
+export interface Notification {
+  id: string; // UUID
+  recipient_id: string; // UUID
+  org_id: string; // UUID
+  type: NotificationType;
+  title: string;
+  message: string;
+  link: string | null; // TEXT
+  is_read: boolean;
   created_at: string; // TIMESTAMPTZ
 }

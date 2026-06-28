@@ -27,7 +27,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [state, formAction, pending] = useActionState(signup, initialState)
 
   return (
-    <Card className="bg-white shadow-sm border-slate-200" {...props}>
+    <Card className="bg-white dark:bg-slate-900 shadow-sm border-slate-200 dark:border-slate-800" {...props}>
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
         <CardDescription>

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createBulkNotifications } from '@/lib/notifications'
 
 export async function createEvent(
   orgId: string, 
@@ -57,6 +58,25 @@ export async function createEvent(
   if (insertError) {
     console.error('Create event error:', insertError)
     return { success: false, error: `Database error: ${insertError.message}` }
+  }
+
+  // Fetch all org members to notify them
+  const { data: members } = await supabase
+    .from('org_members')
+    .select('profile_id')
+    .eq('org_id', orgId)
+
+  if (members && members.length > 0) {
+    const memberIds = members.map(m => m.profile_id).filter(id => id !== user.id) // Exclude creator
+    
+    await createBulkNotifications({
+      recipientIds: memberIds,
+      orgId,
+      type: 'event_created',
+      title: 'New Event Scheduled',
+      message: `${title} has been scheduled.`,
+      link: `/${orgSlug}/events`
+    })
   }
 
   revalidatePath(`/${orgSlug}/events`)

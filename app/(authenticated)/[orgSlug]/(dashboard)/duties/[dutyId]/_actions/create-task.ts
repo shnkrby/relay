@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { createNotification } from '@/lib/notifications'
 
 export async function createTask(
   dutyId: string, 
@@ -43,6 +44,29 @@ export async function createTask(
   if (insertError) {
     console.error('Create task error:', insertError)
     return { success: false, error: `Database error: ${insertError.message}` }
+  }
+
+  // If a task is assigned, notify the assignee
+  if (assignee_id && assignee_id !== user.id) {
+    // We need the orgId to send the notification
+    const { data: duty } = await supabase
+      .from('event_duties')
+      .select('events(org_id)')
+      .eq('id', dutyId)
+      .single()
+      
+    const orgId = Array.isArray(duty?.events) ? duty?.events[0]?.org_id : (duty?.events as any)?.org_id
+    
+    if (orgId) {
+      await createNotification({
+        recipientId: assignee_id,
+        orgId: orgId as string,
+        type: 'task_assigned',
+        title: 'New Task Assigned',
+        message: `You have been assigned to: ${title}`,
+        link: `/${orgSlug}/duties/${dutyId}`
+      })
+    }
   }
 
   revalidatePath(`/${orgSlug}/duties/${dutyId}`)
