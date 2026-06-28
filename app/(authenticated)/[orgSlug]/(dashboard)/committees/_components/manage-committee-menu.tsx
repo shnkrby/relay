@@ -49,6 +49,7 @@ export function ManageCommitteeMenu({ committee, orgId, orgSlug }: ManageCommitt
       <EditCommitteeDialog
         committeeId={committee.id}
         committeeName={committee.name}
+        committeeDescription={committee.description}
         orgId={orgId}
         orgSlug={orgSlug}
         open={editOpen}

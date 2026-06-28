@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { createCommitteeSchema } from '@/lib/validations/committee'
+import { editCommitteeSchema } from '@/lib/validations/committee'
 
 export async function updateCommittee(
   committeeId: string, 
@@ -14,9 +14,10 @@ export async function updateCommittee(
   const supabase = await createClient()
 
   const name = formData.get('name') as string
+  const description = formData.get('description') as string | null
   
   // Zod validation
-  const result = createCommitteeSchema.safeParse({ name })
+  const result = editCommitteeSchema.safeParse({ name, description })
   if (!result.success) {
     return { success: false, error: result.error.issues[0].message }
   }
@@ -55,7 +56,7 @@ export async function updateCommittee(
   // Update committee
   const { error: updateError } = await supabase
     .from('committees')
-    .update({ name })
+    .update({ name, description })
     .eq('id', committeeId)
     .eq('org_id', orgId) // extra safety check
 

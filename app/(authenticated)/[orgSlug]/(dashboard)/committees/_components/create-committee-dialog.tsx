@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -82,7 +83,7 @@ export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [] }: Creat
         <DialogHeader>
           <DialogTitle>Create a New Committee</DialogTitle>
           <DialogDescription>
-            Committees act as teams inside your organization.
+            As an Executive, you will automatically be assigned as the <strong className="text-foreground">Executive-in-Charge</strong> of this committee. You can appoint a Committee Lead to handle day-to-day operations.
           </DialogDescription>
         </DialogHeader>
         <form action={onSubmit} className="space-y-4">
@@ -92,19 +93,30 @@ export function CreateCommitteeDialog({ orgId, orgSlug, orgMembers = [] }: Creat
               <Input id="name" name="name" placeholder="e.g., Marketing, Development" required disabled={isPending} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="leadId">Committee Head</Label>
+              <Label htmlFor="description">Committee Purpose / Description (Optional)</Label>
+              <Textarea 
+                id="description" 
+                name="description" 
+                placeholder="Briefly describe what this committee is responsible for..." 
+                disabled={isPending} 
+                className="resize-none"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="leadId">Committee Lead (Day-to-day Manager)</Label>
               <Select 
                 name="leadId" 
                 disabled={isPending} 
                 required
                 value={selectedLeadId}
-                onValueChange={(val) => setSelectedLeadId(val || '')}
+                onValueChange={(val: string | null) => setSelectedLeadId(val || '')}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Assign a head...">
+                  <SelectValue placeholder="Assign a lead...">
                     {selectedLeadId 
                       ? orgMembers.find(m => m.id === selectedLeadId)?.name 
-                      : "Assign a head..."}
+                      : "Assign a lead..."}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>

@@ -33,7 +33,10 @@ export interface Committee {
   id: string; // UUID
   org_id: string; // UUID
   name: string;
+  description: string | null; // TEXT
+  executive_id: string | null; // UUID
   lead_id: string | null; // UUID
+  member_limit: number | null; // INTEGER
   created_at: string; // TIMESTAMPTZ
 }
 

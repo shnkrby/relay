@@ -16,12 +16,14 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { updateCommittee } from '../_actions/update-committee'
 
 interface EditCommitteeDialogProps {
   committeeId: string
   committeeName: string
+  committeeDescription: string | null
   orgId: string
   orgSlug: string
   open: boolean
@@ -31,6 +33,7 @@ interface EditCommitteeDialogProps {
 export function EditCommitteeDialog({ 
   committeeId, 
   committeeName, 
+  committeeDescription,
   orgId, 
   orgSlug, 
   open, 
@@ -67,16 +70,30 @@ export function EditCommitteeDialog({
           </DialogDescription>
         </DialogHeader>
         <form action={onSubmit} className="space-y-4">
-          <div className="space-y-2 py-4">
-            <Label htmlFor="name">Committee Name</Label>
-            <Input 
-              id="name" 
-              name="name" 
-              defaultValue={committeeName} 
-              placeholder="e.g., Marketing, Development" 
-              required 
-              disabled={isPending} 
-            />
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Committee Name</Label>
+              <Input 
+                id="name" 
+                name="name" 
+                defaultValue={committeeName} 
+                placeholder="e.g., Marketing, Development" 
+                required 
+                disabled={isPending} 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Committee Purpose / Description</Label>
+              <Textarea 
+                id="description" 
+                name="description" 
+                defaultValue={committeeDescription || ''}
+                placeholder="Briefly describe what this committee is responsible for..." 
+                disabled={isPending} 
+                className="resize-none"
+                rows={3}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isPending}>

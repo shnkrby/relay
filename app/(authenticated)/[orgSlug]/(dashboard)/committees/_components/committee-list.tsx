@@ -57,9 +57,30 @@ export function CommitteeList({ committees, orgId, orgSlug, role, orgMembers, us
             )}
           </CardHeader>
           <CardContent className="flex-1">
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">
-              Organize events, assign tasks, and track progress within this committee.
-            </p>
+            <div className="space-y-4">
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">
+                {committee.description || "No description provided for this committee."}
+              </p>
+              
+              <div className="space-y-2 pt-2 border-t text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Executive-in-Charge:</span>
+                  <span className="font-medium text-foreground">
+                    {committee.executive_id 
+                      ? (orgMembers.find(m => m.id === committee.executive_id)?.name || 'Unknown Executive') 
+                      : 'None'}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Committee Lead:</span>
+                  <span className="font-medium text-foreground">
+                    {committee.lead_id 
+                      ? (orgMembers.find(m => m.id === committee.lead_id)?.name || 'Unknown Lead') 
+                      : 'Unassigned'}
+                  </span>
+                </div>
+              </div>
+            </div>
           </CardContent>
           <CardFooter className="pt-4 border-t bg-slate-50/50 dark:bg-slate-900/20 flex items-center justify-between">
             <div className="flex items-center gap-2">

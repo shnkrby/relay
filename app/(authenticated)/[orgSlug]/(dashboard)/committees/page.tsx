@@ -45,22 +45,20 @@ export default async function CommitteesPage({
   const isLeaderOfAny = committees.some((c: any) => c.lead_id === user.id)
 
   let orgMembers: { id: string; name: string }[] = []
-  if (isAdmin || isLeaderOfAny) {
-    const { data: members } = await supabase
-      .from('org_members')
-      .select('profile_id, profiles(id, full_name, email)')
-      .eq('org_id', org.id)
+  const { data: members } = await supabase
+    .from('org_members')
+    .select('profile_id, profiles(id, full_name, email)')
+    .eq('org_id', org.id)
 
-    if (members) {
-      orgMembers = members
-        .map((m: any) => {
-          const profile = m.profiles ? (Array.isArray(m.profiles) ? m.profiles[0] : m.profiles) : null;
-          return {
-            id: m.profile_id,
-            name: profile?.full_name || profile?.email?.split('@')[0] || (m.profile_id === user.id ? 'You (Owner)' : 'Unknown Member'),
-          }
-        })
-    }
+  if (members) {
+    orgMembers = members
+      .map((m: any) => {
+        const profile = m.profiles ? (Array.isArray(m.profiles) ? m.profiles[0] : m.profiles) : null;
+        return {
+          id: m.profile_id,
+          name: profile?.full_name || profile?.email?.split('@')[0] || (m.profile_id === user.id ? 'You (Owner)' : 'Unknown Member'),
+        }
+      })
   }
 
   return (
