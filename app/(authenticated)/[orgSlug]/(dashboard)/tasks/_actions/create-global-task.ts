@@ -4,20 +4,24 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { createNotification } from '@/lib/notifications'
 
-export async function createTask(
-  dutyId: string, 
+export async function createGlobalTask(
   orgSlug: string, 
   prevState: any, 
   formData: FormData
 ) {
   const supabase = await createClient()
 
+  const dutyId = formData.get('duty_id') as string
   const title = formData.get('title') as string
   const description = formData.get('description') as string | null
   const assigneeIdsStr = formData.get('assignee_ids') as string | null
   const assignee_ids = assigneeIdsStr ? assigneeIdsStr.split(',').filter(Boolean) : []
   const priority = formData.get('priority') as string
   const due_date = formData.get('due_date') as string | null
+
+  if (!dutyId) {
+    return { success: false, error: 'Duty context is required.' }
+  }
 
   if (!title) {
     return { success: false, error: 'Task title is required.' }
@@ -27,6 +31,17 @@ export async function createTask(
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
     return { success: false, error: 'Not authenticated.' }
+  }
+
+  // Verify that the duty belongs to the org
+  const { data: dutyCheck } = await supabase
+    .from('event_duties')
+    .select('events!inner(org_id)')
+    .eq('id', dutyId)
+    .single()
+
+  if (!dutyCheck) {
+    return { success: false, error: 'Invalid duty context.' }
   }
 
   // Insert task and get its ID
@@ -45,7 +60,7 @@ export async function createTask(
     .single()
 
   if (insertError) {
-    console.error('Create task error:', insertError)
+    console.error('Create global task error:', insertError)
     return { success: false, error: `Database error: ${insertError.message}` }
   }
 
@@ -59,38 +74,28 @@ export async function createTask(
     const { error: assigneesError } = await supabase
       .from('task_assignees')
       .insert(assigneeRecords)
-      
-    if (assigneesError) {
-      console.error('Assignees error:', assigneesError)
-      // Non-fatal, proceed to return success but maybe some weren't assigned
-    }
 
-    // Notify assignees
-    const { data: duty } = await supabase
-      .from('event_duties')
-      .select('events(org_id)')
-      .eq('id', dutyId)
-      .single()
-      
-    const orgId = Array.isArray(duty?.events) ? duty?.events[0]?.org_id : (duty?.events as any)?.org_id
-    
-    if (orgId) {
-      const promises = assignee_ids
-        .filter(id => id !== user.id) // don't notify self
-        .map(id => createNotification({
-          recipientId: id,
-          orgId: orgId as string,
-          type: 'task_assigned',
-          title: 'New Task Assigned',
-          message: `You have been assigned to: ${title}`,
-          link: `/${orgSlug}/duties/${dutyId}`
-        }))
-        
-      await Promise.allSettled(promises)
+    if (assigneesError) {
+      console.error('Task assignees error:', assigneesError)
+      // We don't fail the whole action, but we should log it.
+    } else {
+      // Create notifications for each assignee (except if they assigned themselves)
+      for (const assignee_id of assignee_ids) {
+        if (assignee_id !== user.id) {
+          await createNotification({
+            recipientId: assignee_id,
+            orgId: Array.isArray(dutyCheck.events) ? (dutyCheck.events[0] as any).org_id : (dutyCheck.events as any).org_id,
+            type: 'task_assigned',
+            title: 'New Task Assigned',
+            message: `You have been assigned to: ${title}`,
+            link: `/${orgSlug}/duties/${dutyId}`
+          })
+        }
+      }
     }
   }
 
-  revalidatePath(`/${orgSlug}/duties/${dutyId}`)
+  revalidatePath(`/${orgSlug}/tasks`)
   revalidatePath(`/${orgSlug}`)
   
   return { success: true }

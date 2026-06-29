@@ -84,6 +84,6 @@ export async function updateBoard(orgSlug: string, orgId: string, prevState: any
     return { success: false, error: 'Failed to update vacant roles.' }
   }
 
-  revalidatePath(`/${orgSlug}/leadership`)
+  revalidatePath(`/${orgSlug}/organization`)
   return { success: true }
 }

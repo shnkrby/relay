@@ -12,19 +12,33 @@ export async function reassignTask(
 ) {
   const supabase = await createClient()
 
-  const assignee_id = formData.get('assignee_id') as string | null
+  const assigneeIdsStr = formData.get('assignee_ids') as string | null
+  const assignee_ids = assigneeIdsStr ? assigneeIdsStr.split(',').filter(Boolean) : []
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Not authenticated.' }
 
-  const { error } = await supabase
-    .from('tasks')
-    .update({
-      assignee_id: assignee_id || null
-    })
-    .eq('id', taskId)
+  // 1. Delete existing assignees for this task
+  const { error: deleteError } = await supabase
+    .from('task_assignees')
+    .delete()
+    .eq('task_id', taskId)
 
-  if (error) return { success: false, error: error.message }
+  if (deleteError) return { success: false, error: deleteError.message }
+
+  // 2. Insert new assignees
+  if (assignee_ids.length > 0) {
+    const assigneeRecords = assignee_ids.map(id => ({
+      task_id: taskId,
+      profile_id: id
+    }))
+    
+    const { error: insertError } = await supabase
+      .from('task_assignees')
+      .insert(assigneeRecords)
+      
+    if (insertError) return { success: false, error: insertError.message }
+  }
 
   revalidatePath(`/${orgSlug}/duties/${dutyId}`)
   return { success: true }

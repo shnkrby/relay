@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { UserMinusIcon, Loader2Icon } from 'lucide-react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -19,9 +19,20 @@ interface ReassignTaskDialogProps {
 
 export function ReassignTaskDialog({ task, dutyId, orgSlug, members, open, onOpenChange }: ReassignTaskDialogProps) {
   const [isPending, setIsPending] = useState(false)
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([])
+
+  useEffect(() => {
+    if (open && task) {
+      const initialIds = Array.isArray(task.assignees) 
+        ? task.assignees.map((a: any) => a.id)
+        : []
+      setSelectedAssignees(initialIds)
+    }
+  }, [open, task])
 
   async function onSubmit(formData: FormData) {
     setIsPending(true)
+    formData.set('assignee_ids', selectedAssignees.join(','))
     const result = await reassignTask(task.id, dutyId, orgSlug, null, formData)
     setIsPending(false)
     
@@ -34,6 +45,12 @@ export function ReassignTaskDialog({ task, dutyId, orgSlug, members, open, onOpe
     onOpenChange(false)
   }
 
+  const toggleAssignee = (id: string) => {
+    setSelectedAssignees(prev => 
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    )
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px]">
@@ -43,27 +60,31 @@ export function ReassignTaskDialog({ task, dutyId, orgSlug, members, open, onOpe
             Reassign Task
           </DialogTitle>
           <DialogDescription>
-            Pass this task to a different committee member.
+            Pass this task to different committee members.
           </DialogDescription>
         </DialogHeader>
 
         <form action={onSubmit} className="space-y-4 pt-4">
           <div className="space-y-2">
-            <Label htmlFor="assignee_id">New Assignee</Label>
-            <select
-              id="assignee_id"
-              name="assignee_id"
-              disabled={isPending}
-              defaultValue={task.assignee_id || ''}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="">Unassigned</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
+            <Label>Assignees</Label>
+            <div className="border rounded-md p-2 h-[150px] overflow-y-auto space-y-1">
+              {members.length === 0 ? (
+                <p className="text-sm text-muted-foreground p-2">No committee members available</p>
+              ) : (
+                members.map((m) => (
+                  <label key={m.id} className="flex items-center gap-2 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                      checked={selectedAssignees.includes(m.id)}
+                      onChange={() => toggleAssignee(m.id)}
+                      disabled={isPending}
+                    />
+                    <span className="text-sm">{m.name}</span>
+                  </label>
+                ))
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-6">

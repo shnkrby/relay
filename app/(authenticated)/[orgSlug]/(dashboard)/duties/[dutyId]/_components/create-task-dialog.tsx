@@ -24,9 +24,11 @@ interface CreateTaskDialogProps {
 export function CreateTaskDialog({ dutyId, orgSlug, members }: CreateTaskDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isPending, setIsPending] = useState(false)
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([])
 
   async function onSubmit(formData: FormData) {
     setIsPending(true)
+    formData.set('assignee_ids', selectedAssignees.join(','))
     const result = await createTask(dutyId, orgSlug, null, formData)
     setIsPending(false)
     
@@ -37,6 +39,13 @@ export function CreateTaskDialog({ dutyId, orgSlug, members }: CreateTaskDialogP
 
     toast.success('Task created successfully!')
     setIsOpen(false)
+    setSelectedAssignees([])
+  }
+
+  const toggleAssignee = (id: string) => {
+    setSelectedAssignees(prev => 
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    )
   }
 
   return (
@@ -56,7 +65,7 @@ export function CreateTaskDialog({ dutyId, orgSlug, members }: CreateTaskDialogP
             Create New Task
           </DialogTitle>
           <DialogDescription>
-            Pass the baton by assigning a specific task to a committee member.
+            Pass the baton by assigning a specific task to committee members.
           </DialogDescription>
         </DialogHeader>
 
@@ -80,24 +89,7 @@ export function CreateTaskDialog({ dutyId, orgSlug, members }: CreateTaskDialogP
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="assignee_id">Assign To (Optional)</Label>
-              <select
-                id="assignee_id"
-                name="assignee_id"
-                disabled={isPending}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="">Unassigned</option>
-                {members.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="priority">Priority</Label>
+              <Label>Priority</Label>
               <select
                 id="priority"
                 name="priority"
@@ -112,7 +104,7 @@ export function CreateTaskDialog({ dutyId, orgSlug, members }: CreateTaskDialogP
               </select>
             </div>
             
-            <div className="space-y-2 col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="due_date">Deadline (Optional)</Label>
               <Input 
                 type="date" 
@@ -120,6 +112,28 @@ export function CreateTaskDialog({ dutyId, orgSlug, members }: CreateTaskDialogP
                 name="due_date" 
                 disabled={isPending} 
               />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Assignees (Optional)</Label>
+            <div className="border rounded-md p-2 h-[120px] overflow-y-auto space-y-1">
+              {members.length === 0 ? (
+                <p className="text-sm text-muted-foreground p-2">No committee members available</p>
+              ) : (
+                members.map((m) => (
+                  <label key={m.id} className="flex items-center gap-2 p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+                      checked={selectedAssignees.includes(m.id)}
+                      onChange={() => toggleAssignee(m.id)}
+                      disabled={isPending}
+                    />
+                    <span className="text-sm">{m.name}</span>
+                  </label>
+                ))
+              )}
             </div>
           </div>
 

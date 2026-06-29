@@ -39,8 +39,11 @@ interface FormattedTask {
   due_date: string | null
   overdue_reason: string | null
   completion_report: string | null
-  assignee_id: string | null
-  assignee_name: string | null
+  assignees: {
+    id: string
+    full_name: string | null
+    email: string | null
+  }[]
 }
 
 interface MemberOption {
@@ -175,7 +178,7 @@ export function TaskBoard({ tasks, dutyId, orgSlug, currentUserId, canManageTask
           <TableHeader>
             <TableRow>
               <TableHead className="w-[300px]">Task</TableHead>
-              <TableHead>Assignee</TableHead>
+              <TableHead>Assignees</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Deadline</TableHead>
               <TableHead>Status</TableHead>
@@ -185,8 +188,9 @@ export function TaskBoard({ tasks, dutyId, orgSlug, currentUserId, canManageTask
           </TableHeader>
           <TableBody>
             {tasks.map((task) => {
-              const isAssignedToMe = task.assignee_id === currentUserId
-              const canUpdate = isAssignedToMe || (canManageTasks && !task.assignee_id)
+              const isAssignedToMe = task.assignees?.some(a => a.id === currentUserId)
+              const isUnassigned = !task.assignees || task.assignees.length === 0
+              const canUpdate = isAssignedToMe || (canManageTasks && isUnassigned)
               const isCompleted = task.status === 'completed'
 
               return (
@@ -201,7 +205,9 @@ export function TaskBoard({ tasks, dutyId, orgSlug, currentUserId, canManageTask
                   </TableCell>
                   <TableCell>
                     <span className={isAssignedToMe ? "font-medium text-blue-600 dark:text-blue-400" : "text-slate-600 dark:text-slate-400"}>
-                      {task.assignee_name || "Unassigned"}
+                      {!isUnassigned 
+                        ? task.assignees.map(a => a.full_name || a.email).join(', ') 
+                        : "Unassigned"}
                     </span>
                   </TableCell>
                   <TableCell>{getPriorityBadge(task.priority)}</TableCell>
@@ -309,9 +315,11 @@ export function TaskBoard({ tasks, dutyId, orgSlug, currentUserId, canManageTask
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
-                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Assignee</h4>
+                  <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Assignees</h4>
                   <p className="font-medium text-slate-900 dark:text-white">
-                    {selectedTask.assignee_name || "Unassigned"}
+                    {selectedTask.assignees && selectedTask.assignees.length > 0 
+                      ? selectedTask.assignees.map(a => a.full_name || a.email).join(', ') 
+                      : "Unassigned"}
                   </p>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-md border">
