@@ -43,9 +43,9 @@ export function AppSidebar({
       icon: <LayoutDashboardIcon />,
     },
     {
-      title: "Leadership",
-      url: `/${currentOrg.slug}/leadership`,
-      icon: <ShieldCheckIcon />,
+      title: "Tasks",
+      url: `/${currentOrg.slug}/tasks`,
+      icon: <ZapIcon />,
     },
     {
       title: "Events",

@@ -99,14 +99,14 @@ export default function LandingPage() {
         {/* Features Section */}
         <section className="py-24 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200/50 dark:border-slate-800/50">
           <div className="container mx-auto px-4">
-            <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="text-center max-w-3xl mx-auto mb-16 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
               <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Everything you need to run your organization</h2>
               <p className="text-slate-600 dark:text-slate-400">Powerful features designed to help leadership teams coordinate effectively and keep members engaged.</p>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
               {/* Feature 1 */}
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
                 <div className="size-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-6">
                   <UsersIcon className="size-6 text-blue-600 dark:text-blue-400" />
                 </div>
@@ -115,7 +115,7 @@ export default function LandingPage() {
               </div>
 
               {/* Feature 2 */}
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow animate-fade-in-up" style={{ animationDelay: '0.7s' }}>
                 <div className="size-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-6">
                   <CheckCircle2Icon className="size-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
@@ -124,7 +124,7 @@ export default function LandingPage() {
               </div>
 
               {/* Feature 3 */}
-              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow">
+              <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm hover:shadow-md transition-shadow animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
                 <div className="size-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mb-6">
                   <Building2Icon className="size-6 text-purple-600 dark:text-purple-400" />
                 </div>

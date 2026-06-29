@@ -1,7 +1,7 @@
 // Enums
 export type OrgRole = 'owner' | 'admin' | 'member';
 export type TaskStatus = 'pending' | 'in_progress' | 'completed';
-export type EventStatus = 'upcoming' | 'active' | 'completed' | 'cancelled';
+export type EventStatus = 'upcoming' | 'active' | 'completed' | 'cancelled' | 'paused';
 export type PriorityLevel = 'low' | 'medium' | 'high';
 export type NotificationType = 'task_assigned' | 'task_completed' | 'duty_assigned' | 'event_created' | 'role_changed' | 'member_joined';
 
@@ -71,7 +71,7 @@ export interface EventDuty {
 export interface Task {
   id: string; // UUID
   duty_id: string; // UUID
-  assignee_id: string | null; // UUID
+  assigner_id: string | null; // UUID
   title: string;
   description: string | null;
   status: TaskStatus;
@@ -80,6 +80,7 @@ export interface Task {
   overdue_reason: string | null; // TEXT
   completion_report: string | null; // TEXT
   created_at: string; // TIMESTAMPTZ
+  updated_at?: string; // TIMESTAMPTZ
 }
 
 export interface Notification {
