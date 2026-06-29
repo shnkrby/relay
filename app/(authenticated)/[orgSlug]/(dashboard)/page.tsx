@@ -9,6 +9,7 @@ import { redirect } from 'next/navigation'
 import { StatCard } from './_components/stat-card'
 import { QuickActions } from './_components/quick-actions'
 import { MyTasksPanel } from './_components/my-tasks-panel'
+import { MyCommitteesPanel } from './_components/my-committees-panel'
 import { EventProgressCards } from './_components/event-progress-card'
 
 export default async function WorkspaceDashboard({
@@ -46,7 +47,7 @@ export default async function WorkspaceDashboard({
   const isAdmin = role === 'admin' || role === 'owner'
   const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
 
-  const data = await getDashboardData(org.id, user.id)
+  const data = await getDashboardData(org.id, user.id, isAdmin)
 
   // Build role-aware subtitle
   let subtitle = ''
@@ -82,9 +83,9 @@ export default async function WorkspaceDashboard({
       {/* Stats Grid — 6 cards */}
       <div className="grid gap-4 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         <StatCard
-          title="Active Events"
+          title={isAdmin ? "Active Events" : "My Events"}
           value={data.activeEventsCount}
-          subtitle="Currently running"
+          subtitle={isAdmin ? "Currently running" : "In your committees"}
           icon={<CalendarIcon className="size-4" />}
           accent="blue"
         />
@@ -109,70 +110,89 @@ export default async function WorkspaceDashboard({
           icon={<AlertTriangleIcon className="size-4" />}
           accent={data.overdueTasksCount > 0 ? 'red' : 'default'}
         />
-        <StatCard
-          title="Committees"
-          value={data.committeesCount}
-          subtitle="In this org"
-          icon={<LayoutGridIcon className="size-4" />}
-          accent="purple"
-        />
-        <StatCard
-          title="Members"
-          value={data.teamMembersCount}
-          subtitle="Total team size"
-          icon={<UsersIcon className="size-4" />}
-        />
+        {isAdmin ? (
+          <>
+            <StatCard
+              title="Committees"
+              value={data.committeesCount}
+              subtitle="In this org"
+              icon={<LayoutGridIcon className="size-4" />}
+              accent="purple"
+            />
+            <StatCard
+              title="Members"
+              value={data.teamMembersCount}
+              subtitle="Total team size"
+              icon={<UsersIcon className="size-4" />}
+            />
+          </>
+        ) : (
+          <>
+            <div className="col-span-2 hidden md:block lg:hidden"></div>
+          </>
+        )}
       </div>
 
       {/* Main Content: 3-column on large, 2 on medium */}
-      <div className="grid gap-6 lg:grid-cols-5">
-        {/* Activity Feed — 2 cols wide */}
-        <Card className="shadow-sm border-slate-200/80 dark:border-slate-800/80 lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center gap-2">
-              <ActivityIcon className="size-5 text-blue-600" />
-              <CardTitle className="text-lg">Activity Feed</CardTitle>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="relative flex size-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full size-2 bg-blue-500"></span>
-              </span>
-              <span className="text-xs font-medium text-blue-600">Live</span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {data.activityFeed.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <ActivityIcon className="size-10 text-slate-200 dark:text-slate-700 mb-3" />
-                  <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No recent activity.</p>
-                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Activity will appear here as your team works.</p>
-                </div>
-              ) : (
-                data.activityFeed.map((item: any, i: number) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${item.color}`}>
-                      {item.name[0]?.toUpperCase() || '?'}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm leading-snug">
-                        <span className="font-medium text-slate-900 dark:text-white">{item.name}</span>{' '}
-                        <span className="text-slate-500 dark:text-slate-400">{item.action}</span>
-                      </p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{item.time}</p>
-                    </div>
+      <div className={`grid gap-6 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-2'}`}>
+        {/* Activity Feed — 2 cols wide (Only for Admins) */}
+        {isAdmin && (
+          <Card className="shadow-sm border-slate-200/80 dark:border-slate-800/80 lg:col-span-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ActivityIcon className="size-5 text-blue-600" />
+                <CardTitle className="text-lg">Activity Feed</CardTitle>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex size-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full size-2 bg-blue-500"></span>
+                </span>
+                <span className="text-xs font-medium text-blue-600">Live</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className={data.activityFeed.length === 0 ? "space-y-4" : "space-y-3"}>
+                {data.activityFeed.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <ActivityIcon className="size-10 text-slate-200 dark:text-slate-700 mb-3" />
+                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">No recent activity.</p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Activity will appear here as your team works.</p>
                   </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                ) : (
+                  data.activityFeed.map((item: any, i: number) => (
+                    <div key={i} className="flex items-start gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                      <div className={`flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${item.color}`}>
+                        {item.name[0]?.toUpperCase() || '?'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm leading-snug">
+                          <span className="font-medium text-slate-900 dark:text-white">{item.name}</span>{' '}
+                          <span className="text-slate-500 dark:text-slate-400">{item.action}</span>
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{item.time}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Event Progress — 3 cols wide */}
-        <div className="lg:col-span-3 flex flex-col gap-6">
-          <EventProgressCards events={data.eventProgress} orgSlug={orgSlug} />
-          <MyTasksPanel tasks={data.myTasks} orgSlug={orgSlug} />
+        {/* Member View: My Committees */}
+        {!isAdmin && (
+          <div className="lg:col-span-2">
+            <MyCommitteesPanel committees={data.myCommittees || []} orgSlug={orgSlug} />
+          </div>
+        )}
+
+        {/* Event Progress & Tasks */}
+        <div className={`${isAdmin ? 'lg:col-span-3' : 'lg:col-span-2'} flex flex-col gap-6`}>
+          <div className={`grid gap-6 ${isAdmin ? 'grid-cols-1' : 'md:grid-cols-2'}`}>
+            <EventProgressCards events={data.eventProgress} orgSlug={orgSlug} />
+            <MyTasksPanel tasks={data.myTasks} orgSlug={orgSlug} />
+          </div>
         </div>
       </div>
     </div>

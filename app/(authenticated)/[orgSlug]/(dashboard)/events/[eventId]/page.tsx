@@ -30,6 +30,16 @@ export default async function EventDetailsPage({
     redirect('/organizations')
   }
 
+  // Auto-start event if start date has arrived
+  const todayStr = new Date().toISOString()
+  await supabase
+    .from('events')
+    .update({ status: 'active' })
+    .eq('id', eventId)
+    .eq('org_id', org.id)
+    .eq('status', 'upcoming')
+    .lte('start_date', todayStr)
+
   // Get Event
   const { data: event } = await supabase
     .from('events')

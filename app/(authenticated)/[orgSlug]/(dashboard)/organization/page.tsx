@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Building2Icon } from 'lucide-react'
+import { Building2Icon, ShieldCheckIcon, UserCircle2Icon, BriefcaseBusinessIcon } from 'lucide-react'
 import { MemberList } from './_components/member-list'
 import { ManageOrgDialog } from './_components/manage-org-dialog'
+import { ManageBoardDialog } from './_components/manage-board-dialog'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 export default async function OrganizationPage({
   params
@@ -39,12 +41,12 @@ export default async function OrganizationPage({
   const role = memberData?.role || 'member'
   const isAdmin = role === 'admin' || role === 'owner'
 
-  // Fetch all members for the roster
+  // Fetch all members for the roster and leadership
   const { data: membersData } = await supabase
     .from('org_members')
     .select('profile_id, role, executive_title, joined_at, profiles(id, full_name, email, avatar_url)')
     .eq('org_id', org.id)
-    .order('joined_at', { ascending: true })
+    .order('role', { ascending: false }) // 'owner' comes before 'admin' and 'member'
 
   const members = membersData?.map((m: any) => {
     const profile = m.profiles ? (Array.isArray(m.profiles) ? m.profiles[0] : m.profiles) : null;
@@ -52,12 +54,17 @@ export default async function OrganizationPage({
       id: m.profile_id,
       role: m.role,
       executiveTitle: m.executive_title,
+      executive_title: m.executive_title, // For manage board dialog compatibility
       joinedAt: m.joined_at,
       name: profile?.full_name || profile?.email?.split('@')[0] || 'Unknown Member',
       email: profile?.email || '',
       avatarUrl: profile?.avatar_url,
     }
   }) || []
+
+  const executives = members.filter(m => m.role === 'owner' || m.role === 'admin')
+  const isOwner = role === 'owner'
+  const vacantRoles = (org.vacant_roles as string[]) || []
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8">
@@ -84,9 +91,85 @@ export default async function OrganizationPage({
         )}
       </div>
 
+      {/* Leadership / Executive Board Area */}
+      <div className="mt-4 flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+              <ShieldCheckIcon className="size-6 text-primary" />
+              Executive Board
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              The leadership team guiding {org.name}.
+            </p>
+          </div>
+          {isOwner && (
+            <ManageBoardDialog 
+              orgId={org.id} 
+              orgSlug={orgSlug} 
+              members={members} 
+              currentUserId={user.id} 
+              vacantRoles={vacantRoles}
+            />
+          )}
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {executives.map((exec) => (
+            <div key={exec.id} className="flex flex-col bg-card rounded-xl shadow-sm ring-1 ring-border overflow-hidden hover:shadow-md transition-shadow">
+              <div className={`h-2 w-full ${exec.role === 'owner' ? 'bg-amber-500' : 'bg-primary'}`} />
+              <div className="p-6 flex flex-col items-center text-center space-y-4">
+                <Avatar className="size-20">
+                  <AvatarImage src={exec.avatarUrl || ''} alt={exec.name} />
+                  <AvatarFallback className="text-2xl bg-secondary text-muted-foreground">
+                    {exec.name?.substring(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-lg text-foreground line-clamp-1">{exec.name}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-1">{exec.email}</p>
+                </div>
+                <div className="pt-4 border-t border-border w-full flex flex-col items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    <BriefcaseBusinessIcon className="size-3.5" />
+                    {exec.executiveTitle || 'Executive'}
+                  </span>
+                  {exec.role === 'owner' && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                      Organization Owner
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {vacantRoles.map((title, idx) => (
+            <div key={`vacant-${idx}`} className="flex flex-col bg-card rounded-xl shadow-sm ring-1 ring-border overflow-hidden hover:shadow-md transition-shadow opacity-75">
+              <div className="h-2 w-full bg-muted" />
+              <div className="p-6 flex flex-col items-center text-center space-y-4">
+                <div className="bg-secondary p-4 rounded-full border-2 border-dashed border-border">
+                  <UserCircle2Icon className="size-12 text-muted-foreground" strokeWidth={1} />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="font-semibold text-lg text-muted-foreground italic line-clamp-1">Empty Position</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-1">Unassigned</p>
+                </div>
+                <div className="pt-4 border-t border-border w-full flex flex-col items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground">
+                    <BriefcaseBusinessIcon className="size-3.5" />
+                    {title}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Main Content Area */}
-      <div className="mt-4">
-        <h2 className="text-xl font-semibold mb-4 text-slate-900 dark:text-white">Organization Members</h2>
+      <div className="mt-8 border-t pt-8">
+        <h2 className="text-2xl font-semibold mb-4 text-slate-900 dark:text-white">All Members</h2>
         <MemberList members={members} org={org} currentUserId={user.id} isAdmin={isAdmin} />
       </div>
     </div>

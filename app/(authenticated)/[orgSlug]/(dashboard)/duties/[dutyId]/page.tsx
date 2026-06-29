@@ -81,10 +81,12 @@ export default async function DutyTaskBoardPage({
       due_date,
       overdue_reason,
       completion_report,
-      assignee_id,
-      profiles (
-        full_name,
-        email
+      assignees:task_assignees (
+        profile:profiles (
+          id,
+          full_name,
+          email
+        )
       )
     `)
     .eq('duty_id', dutyId)
@@ -105,10 +107,13 @@ export default async function DutyTaskBoardPage({
   }) || []
 
   const formattedTasks = tasks?.map((t: any) => {
-    const profile = Array.isArray(t.profiles) ? t.profiles[0] : t.profiles
+    const assigneesList = Array.isArray(t.assignees) 
+      ? t.assignees.map((a: any) => a.profile).filter(Boolean)
+      : []
+    
     return {
       ...t,
-      assignee_name: profile ? (profile.full_name || profile.email?.split('@')[0]) : null
+      assignees: assigneesList
     }
   }) || []
 

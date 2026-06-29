@@ -39,6 +39,15 @@ export default async function EventsPage({
 
   const isAdmin = memberData?.role === 'admin' || memberData?.role === 'owner'
 
+  // Auto-start upcoming events if their start date has arrived
+  const todayStr = new Date().toISOString()
+  await supabase
+    .from('events')
+    .update({ status: 'active' })
+    .eq('org_id', org.id)
+    .eq('status', 'upcoming')
+    .lte('start_date', todayStr)
+
   // Fetch Events
   const { data: eventsData } = await supabase
     .from('events')
@@ -68,7 +77,7 @@ export default async function EventsPage({
         )}
       </div>
 
-      <EventList events={events} orgSlug={orgSlug} isAdmin={isAdmin} />
+      <EventList events={events} orgSlug={orgSlug} isAdmin={isAdmin} orgId={org.id} />
     </div>
   )
 }
