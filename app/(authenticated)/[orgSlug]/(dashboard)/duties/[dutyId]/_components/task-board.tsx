@@ -140,22 +140,22 @@ export function TaskBoard({ tasks, dutyId, orgSlug, currentUserId, canManageTask
 
     switch (task.status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-transparent text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800">Pending</Badge>
+        return <Badge variant="secondary" className="capitalize bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400 border-none">Pending</Badge>
       case 'in_progress':
-        return <Badge variant="outline" className="bg-transparent text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900/50">In Progress</Badge>
+        return <Badge variant="secondary" className="capitalize bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-400 border-none">In Progress</Badge>
       case 'completed':
-        return <Badge variant="outline" className="bg-transparent text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/50">Completed</Badge>
+        return <Badge variant="secondary" className="capitalize bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-none">Completed</Badge>
     }
   }
 
   function getPriorityBadge(priority: PriorityLevel) {
     switch (priority) {
       case 'high':
-        return <Badge variant="outline" className="bg-transparent border-red-200 text-red-600 dark:text-red-400 dark:border-red-900/50">High</Badge>
+        return <Badge variant="outline" className="capitalize border-red-200 text-red-600 dark:border-red-900 dark:text-red-400">High</Badge>
       case 'medium':
-        return <Badge variant="outline" className="bg-transparent border-amber-200 text-amber-600 dark:text-amber-400 dark:border-amber-900/50">Medium</Badge>
+        return <Badge variant="outline" className="capitalize border-amber-200 text-amber-600 dark:border-amber-900 dark:text-amber-400">Medium</Badge>
       case 'low':
-        return <Badge variant="outline" className="bg-transparent border-blue-200 text-blue-600 dark:text-blue-400 dark:border-blue-900/50">Low</Badge>
+        return <Badge variant="outline" className="capitalize border-blue-200 text-blue-600 dark:border-blue-900 dark:text-blue-400">Low</Badge>
     }
   }
 
@@ -173,7 +173,7 @@ export function TaskBoard({ tasks, dutyId, orgSlug, currentUserId, canManageTask
 
   return (
     <>
-      <div className="rounded-md border bg-white dark:bg-slate-950">
+      <div className="border rounded-md">
         <Table>
           <TableHeader>
             <TableRow>
